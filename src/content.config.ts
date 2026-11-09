@@ -10,7 +10,7 @@ const patterns = defineCollection({
   loader: glob({
     base: "./src/content/patterns",
     pattern: "*/index.md",
-    // The folder name is the slug: hold-to-confirm/index.md -> /patterns/hold-to-confirm/
+    // The folder name is the slug: sticky-stacking-cards/index.md -> /patterns/sticky-stacking-cards/
     generateId: ({ entry }) => entry.split("/")[0],
   }),
   schema: ({ image }) =>

@@ -64,7 +64,7 @@ with `astro dev status`, `astro dev logs`, and `astro dev stop`.
 Create a folder under `src/content/patterns/`. The folder name becomes the URL:
 
 ```text
-src/content/patterns/hold-to-confirm/ -> /patterns/hold-to-confirm/
+src/content/patterns/sticky-stacking-cards/ -> /patterns/sticky-stacking-cards/
 ├── index.md          # Name, summary, screenshot; the body is the agent prompt
 ├── Demo.astro        # The live demo shown on the page
 └── screenshot.png    # Any image format Astro supports
@@ -74,14 +74,14 @@ src/content/patterns/hold-to-confirm/ -> /patterns/hold-to-confirm/
 
 ```markdown
 ---
-name: Hold to confirm
+name: Sticky stacking cards
 summary: One sentence shown on the index and in page metadata.
 screenshot: ./screenshot.png
 screenshotAlt: What the screenshot shows.
 added: 2026-11-09
 code:              # optional; defaults to [Demo.astro]
   - Demo.astro
-  - hold.css
+  - stack.css
 ---
 
 The agent prompt, written in Markdown. It is shown verbatim on the page and

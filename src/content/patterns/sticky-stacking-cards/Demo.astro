@@ -1,0 +1,220 @@
+---
+// Sticky stacking cards: each card pins one title strip below the last, the
+// next card slides over it, and the whole stack leaves together.
+//
+// This demo scrolls inside its own frame, so it uses container queries on the
+// frame. On a full page, drop the frame and use the @media versions noted below.
+const cards = [
+  {
+    key: "pin",
+    title: "Pin",
+    text: "Every card is position: sticky. The page scrolls normally and the browser does the pinning; nothing hijacks the scroll.",
+  },
+  {
+    key: "offset",
+    title: "Offset",
+    text: "Each card pins one title strip lower than the card before, so earlier cards stay visible as a pile of titles.",
+  },
+  {
+    key: "release",
+    title: "Release",
+    text: "Bottom margins step down one strip per card, so every card lets go at the same scroll position and the stack leaves as one.",
+  },
+  {
+    key: "track",
+    title: "Track",
+    text: "A side index lights the card being read. It shows only when there is room beside the stack.",
+  },
+];
+---
+
+<div class="frame" data-deck-scroller>
+  <p class="aside">Scroll inside this frame.</p>
+
+  <div class="deck" data-deck style={`--n:${cards.length}`}>
+    <ol class="index" aria-hidden="true">
+      {cards.map((card, i) => <li class:list={{ on: i === 0 }}>{card.key}</li>)}
+    </ol>
+
+    <div class="cards">
+      {
+        cards.map((card, i) => (
+          <article class="card" style={`--i:${i}`}>
+            <header class="strip">
+              <span class="num">0{i + 1}</span>
+              <h3>{card.title}</h3>
+            </header>
+            <p>{card.text}</p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+
+  <p class="aside end">The stack leaves together.</p>
+</div>
+
+<style>
+  .frame {
+    /* Demo only: a scroll container that stands in for the page */
+    container: deck / size;
+    width: 100%;
+    height: 32rem;
+    overflow-y: auto;
+    background: #fff;
+  }
+
+  .aside {
+    margin: 0;
+    padding: 2rem 1.5rem 8rem;
+    color: #888;
+  }
+
+  .aside.end {
+    padding: 4rem 1.5rem 24rem;
+  }
+
+  .deck {
+    --strip: 3rem;
+    --pin: 1rem;
+    --gap: 1.5rem;
+
+    padding-inline: 1.5rem;
+  }
+
+  .index {
+    display: none;
+  }
+
+  .cards {
+    /* Keeps the last card's bottom margin inside the list, so the stack
+       releases where the list ends */
+    display: flow-root;
+  }
+
+  .card {
+    box-sizing: border-box;
+    /* Equal heights: the cards only release together if they match */
+    height: 16rem;
+    padding: 0 1.25rem 1.25rem;
+    /* Opaque, so a card hides the one it slides over */
+    background: #f2f2f2;
+  }
+
+  .card + .card {
+    margin-top: var(--gap);
+  }
+
+  .strip {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: var(--strip);
+  }
+
+  .strip h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .num {
+    font-variant-numeric: tabular-nums;
+    color: #888;
+  }
+
+  .card p {
+    max-width: 32rem;
+    margin: 1.5rem 0 0;
+  }
+
+  /*
+   * Pin only when the window is tall enough to show a whole card under the
+   * stack (on a page: @media (min-height: 700px)).
+   * Card i pins i strips lower. Its bottom margin is (n - i) strips, so every
+   * card's margin box ends at the same distance below its pin; all of them
+   * hit the end of .cards at once and leave as a stack. The negative top
+   * margin collapses with the previous card's bottom margin, so the visible
+   * gap stays var(--gap).
+   */
+  @container deck (min-height: 28rem) {
+    .card {
+      position: sticky;
+      top: calc(var(--pin) + var(--i) * var(--strip));
+      margin-bottom: calc((var(--n) - var(--i)) * var(--strip));
+      box-shadow: 0 -0.625rem 1rem -0.75rem rgb(0 0 0 / 0.3);
+    }
+
+    .card + .card {
+      margin-top: calc(var(--gap) - (var(--n) + 1 - var(--i)) * var(--strip));
+    }
+  }
+
+  /* Side index when there is room beside the stack (on a page: @media (min-width: 1000px)) */
+  @container deck (min-width: 40rem) {
+    .deck {
+      display: grid;
+      grid-template-columns: 7rem minmax(0, 1fr);
+      align-items: start;
+      gap: 2rem;
+    }
+
+    .index {
+      position: sticky;
+      top: calc(var(--pin) + 0.75rem);
+      display: grid;
+      gap: 0.5rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      color: #aaa;
+    }
+
+    .index li {
+      transition: color 200ms ease;
+    }
+
+    .index li.on {
+      color: #111;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .index li {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  // Light the index entry for the card being read: the last card whose top
+  // edge has passed 55% of the way down the scroller.
+  for (const deck of document.querySelectorAll<HTMLElement>("[data-deck]")) {
+    const scroller = deck.closest<HTMLElement>("[data-deck-scroller]");
+    const cards = [...deck.querySelectorAll<HTMLElement>(".card")];
+    const marks = [...deck.querySelectorAll<HTMLElement>(".index li")];
+    let queued = false;
+
+    const update = () => {
+      queued = false;
+      const view = scroller?.getBoundingClientRect() ?? { top: 0, height: innerHeight };
+      const line = view.top + view.height * 0.55;
+      let active = 0;
+      cards.forEach((card, i) => {
+        if (card.getBoundingClientRect().top < line) active = i;
+      });
+      marks.forEach((mark, i) => mark.classList.toggle("on", i === active));
+    };
+
+    (scroller ?? window).addEventListener(
+      "scroll",
+      () => {
+        if (!queued) {
+          queued = true;
+          requestAnimationFrame(update);
+        }
+      },
+      { passive: true },
+    );
+    update();
+  }
+</script>
