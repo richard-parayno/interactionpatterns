@@ -1,18 +1,17 @@
 ---
-// Copies the text of another element. The "key" variant is the round coloured
-// key that copies the agent prompt, and the only colour on the site; use it
-// once per page. The "text" variant is a plain text button for code samples.
+// Copies the text of another element. It reads as a text link: underlined,
+// in the same size as the text around it. The label changes to "copied" for
+// a moment; if the clipboard is out of reach, the text is selected instead.
 interface Props {
   /** id of the element whose text is copied. */
   target: string;
   label?: string;
-  variant?: "key" | "text";
 }
 
-const { target, label = "Copy prompt", variant = "key" } = Astro.props;
+const { target, label = "Copy prompt" } = Astro.props;
 ---
 
-<button type="button" class={variant} data-copy-target={target} data-copy-label={label}>
+<button type="button" data-copy-target={target} data-copy-label={label}>
   <span data-copy-text>{label}</span>
 </button>
 <span class="visually-hidden" role="status" data-copy-status={target}></span>
@@ -74,46 +73,13 @@ const { target, label = "Copy prompt", variant = "key" } = Astro.props;
     border: 0;
     background: none;
     cursor: pointer;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
     -webkit-tap-highlight-color: transparent;
   }
 
-  .key {
-    display: grid;
-    place-items: center;
-    width: 5.5rem;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background: var(--key);
-    line-height: 1.15;
-    text-align: center;
-    transition: transform 80ms;
-  }
-
-  /* One word per line, so "copy prompt" stacks inside the circle. */
-  .key span {
-    width: min-content;
-  }
-
-  .key:hover {
-    background: color-mix(in srgb, var(--key), var(--ink) 10%);
-  }
-
-  .key:active {
-    transform: scale(0.95);
-  }
-
-  .key[data-state] {
-    background: var(--ink);
-    color: var(--ground);
-  }
-
-  .text[data-state] {
+  button[data-state] {
     color: var(--quiet);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .key {
-      transition: none;
-    }
   }
 </style>

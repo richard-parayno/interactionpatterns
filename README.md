@@ -5,7 +5,7 @@ has a name, a screenshot, a live demo, sample code, and a copy-pastable prompt
 for AI coding agents. Built as a static site with [Astro](https://astro.build/)
 and deployed to Cloudflare Workers.
 
-![A pattern page: the name and an orange copy-prompt key in the left rail, the agent prompt set large beside it](docs/screenshot.png)
+![A pattern page: the name, view links, and a copy-prompt link in the left rail, the agent prompt inside a macOS-style window beside it](docs/screenshot.png)
 
 ## Stack
 
@@ -28,13 +28,15 @@ and deployed to Cloudflare Workers.
 ├── src/
 │   ├── assets/fonts/             # Archivo and Ioskeley Mono, each with OFL.txt and SOURCE.md
 │   ├── components/
-│   │   ├── PageGrid.astro        # Sticky rail and main column
+│   │   ├── PageGrid.astro        # Rail and main column
 │   │   ├── PatternList.astro     # Index wheel picker; the centred pattern's screenshot and summary
 │   │   ├── SoundToggle.astro     # Turns the wheel's tick sound on or off
-│   │   ├── PatternHeader.astro   # Pattern name and summary in the rail
+│   │   ├── PatternHeader.astro   # Pattern name, summary, and links in the rail
+│   │   ├── Window.astro          # macOS-style window holding a pattern's views
+│   │   ├── WindowView.astro      # One view (prompt, demo, screenshot, code), shown via #id
+│   │   ├── WindowNav.astro       # Text links that switch views
 │   │   ├── Prompt.astro          # The agent prompt, shown verbatim
 │   │   ├── CopyButton.astro      # Copies an element's text to the clipboard
-│   │   ├── Section.astro         # Labelled page section
 │   │   ├── Stage.astro           # Frame for the live demo
 │   │   ├── Screenshot.astro
 │   │   └── Code.astro            # One sample file with its own copy button

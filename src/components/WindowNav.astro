@@ -1,0 +1,63 @@
+---
+// Text links to the views of the page's <Window>. They are ordinary links to
+// #id; the script only marks which one is current.
+interface Props {
+  /** In order. `id` matches a <WindowView>; the first is the initial view. */
+  views: { id: string; label: string }[];
+}
+
+const { views } = Astro.props;
+---
+
+<nav aria-label="Views" data-window-nav>
+  <ul>
+    {
+      views.map(({ id, label }, index) => (
+        <li>
+          <a href={`#${id}`} aria-current={index === 0 ? "true" : undefined}>
+            {label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<script>
+  function markCurrent() {
+    document.querySelectorAll("[data-window-nav]").forEach((nav) => {
+      const links = [...nav.querySelectorAll("a")];
+      const current = links.find((link) => link.hash === location.hash) ?? links[0];
+      for (const link of links) {
+        if (link === current) link.setAttribute("aria-current", "true");
+        else link.removeAttribute("aria-current");
+      }
+    });
+  }
+
+  markCurrent();
+  window.addEventListener("hashchange", markCurrent);
+</script>
+
+<style>
+  ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-2);
+  }
+
+  a {
+    color: var(--quiet);
+  }
+
+  a[aria-current] {
+    color: var(--ink);
+  }
+
+  @media (min-width: 50rem) {
+    ul {
+      flex-direction: column;
+      gap: 0;
+    }
+  }
+</style>

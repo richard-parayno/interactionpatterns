@@ -2,13 +2,13 @@
 // The agent prompt, shown verbatim in the large size: the biggest text on a
 // pattern page. Pair it with <CopyButton target={id} />.
 interface Props {
-  /** Element id the copy button targets. */
+  /** Element id the copy button targets. Not "prompt": that is the view's. */
   id?: string;
   /** The prompt exactly as it should be pasted. */
   text: string;
 }
 
-const { id = "prompt", text } = Astro.props;
+const { id = "prompt-text", text } = Astro.props;
 ---
 
 <pre {id}>{text}</pre>

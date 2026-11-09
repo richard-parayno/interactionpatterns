@@ -1,7 +1,8 @@
 ---
-// Rail and main column of a page. The rail is the first of the three grid
-// columns and stays in view while the main column scrolls; without a rail
-// that column is left empty.
+// Rail and main column of a page. The rail is the narrow first column and
+// stays in view while the main column scrolls; without a rail that column is
+// left empty. On a page with BaseLayout's `fit`, the main column takes the
+// height left on the screen.
 const hasRail = Astro.slots.has("rail");
 ---
 
@@ -19,8 +20,22 @@ const hasRail = Astro.slots.has("rail");
 </div>
 
 <style>
+  .grid {
+    /* `fit` makes the page's columns equal; this grid keeps the 1:2 split. */
+    --grid-columns: minmax(0, 1fr) minmax(0, 2fr);
+  }
+
   .rail {
     margin-bottom: var(--space-8);
+  }
+
+  :global(.fit) .grid {
+    flex: 1 1 auto;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  :global(.fit) .rail {
+    margin-bottom: var(--space-3);
   }
 
   @media (min-width: 50rem) {
@@ -33,6 +48,10 @@ const hasRail = Astro.slots.has("rail");
 
     .main {
       grid-column: 2 / -1;
+    }
+
+    :global(.fit) .grid {
+      grid-template-rows: minmax(0, 1fr);
     }
   }
 </style>

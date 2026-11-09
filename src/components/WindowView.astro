@@ -1,0 +1,57 @@
+---
+// One view inside a <Window>: the prompt, the live demo, the screenshot, or
+// the code. The view whose id is in the address (/patterns/x/#demo) is the
+// one shown, so every view has a link and Back steps through them; with no
+// view in the address, the `initial` one shows. No script is involved.
+//
+// Views that are not showing are hidden but still laid out, so a demo can
+// measure itself before anyone opens it. Each view scrolls on its own.
+interface Props {
+  /** Goes in the address, and is what <WindowNav> links to. */
+  id: string;
+  /** Heading for screen readers. */
+  label: string;
+  /** Shown when the address names no view. One per window. */
+  initial?: boolean;
+  /** No padding: the content reaches the window's edges (the demo stage). */
+  flush?: boolean;
+}
+
+const { id, label, initial = false, flush = false } = Astro.props;
+---
+
+<section {id} class:list={{ flush }} data-view data-initial={initial || undefined} tabindex="0">
+  <h2 class="visually-hidden">{label}</h2>
+  <slot />
+</section>
+
+<style>
+  section {
+    position: absolute;
+    inset: 0;
+    overflow: auto;
+    padding: var(--space-5);
+    visibility: hidden;
+    overscroll-behavior: contain;
+  }
+
+  section:target,
+  :global(body:not(:has([data-view]:target))) section[data-initial] {
+    visibility: visible;
+  }
+
+  .flush {
+    padding: 0;
+  }
+
+  /* Inset, because the window's edge is in the way of an outer ring. */
+  section:focus-visible {
+    outline-offset: -4px;
+  }
+
+  @media (max-width: 49.99rem) {
+    section:not(.flush) {
+      padding: var(--space-3);
+    }
+  }
+</style>

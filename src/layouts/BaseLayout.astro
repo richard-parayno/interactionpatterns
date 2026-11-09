@@ -11,8 +11,9 @@ interface Props {
   description: string;
   /**
    * Makes the page exactly one screen tall, in two equal columns, with the
-   * content filling the height between header and footer. For the index,
-   * whose list scrolls inside the page.
+   * content filling the height between header and footer. For pages whose
+   * content scrolls inside them: the index (the drum) and a pattern page
+   * (the window; PageGrid keeps its own column split).
    */
   fit?: boolean;
 }
@@ -95,7 +96,8 @@ const SiteName = isHome ? "h1" : "div";
     }
   }
 
-  /* Only with scripting, because without it the index is an ordinary list. */
+  /* Only with scripting, because without it the index is an ordinary list.
+     A pattern page then has a short window on a page that scrolls. */
   @media (scripting: enabled) {
     .fit {
       display: flex;

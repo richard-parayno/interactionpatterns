@@ -5,8 +5,10 @@ import PageGrid from "../../components/PageGrid.astro";
 import PatternHeader from "../../components/PatternHeader.astro";
 import Prompt from "../../components/Prompt.astro";
 import Screenshot from "../../components/Screenshot.astro";
-import Section from "../../components/Section.astro";
 import Stage from "../../components/Stage.astro";
+import Window from "../../components/Window.astro";
+import WindowNav from "../../components/WindowNav.astro";
+import WindowView from "../../components/WindowView.astro";
 import { getPatterns, type Pattern } from "../../data/patterns";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
@@ -25,22 +27,36 @@ interface Props {
 
 const { entry, prompt, Demo, code } = Astro.props.pattern;
 const { name, summary, screenshot, screenshotAlt } = entry.data;
+
+// Each id is a view in the window and its address (#demo). The views switch
+// through CSS :target, so no other element on the page may use these ids.
+const views = [
+  { id: "prompt", label: "Prompt" },
+  { id: "demo", label: "Live demo" },
+  { id: "screenshot", label: "Screenshot" },
+  { id: "code", label: "Code" },
+];
 ---
 
-<BaseLayout title={name} description={summary}>
+<BaseLayout fit title={name} description={summary}>
   <PageGrid>
     <PatternHeader slot="rail" name={name} summary={summary}>
-      <CopyButton target="prompt" />
+      <WindowNav {views} />
+      <CopyButton target="prompt-text" />
     </PatternHeader>
-    <Prompt text={prompt} />
-    <Section label="Live demo">
-      <Stage><Demo /></Stage>
-    </Section>
-    <Section label="Screenshot">
-      <Screenshot src={screenshot} alt={screenshotAlt} />
-    </Section>
-    <Section label="Code">
-      {code.map((file) => <Code {...file} />)}
-    </Section>
+    <Window title={name}>
+      <WindowView id="prompt" label="Prompt" initial>
+        <Prompt text={prompt} />
+      </WindowView>
+      <WindowView id="demo" label="Live demo" flush>
+        <Stage><Demo /></Stage>
+      </WindowView>
+      <WindowView id="screenshot" label="Screenshot">
+        <Screenshot src={screenshot} alt={screenshotAlt} />
+      </WindowView>
+      <WindowView id="code" label="Code">
+        {code.map((file) => <Code {...file} />)}
+      </WindowView>
+    </Window>
   </PageGrid>
 </BaseLayout>

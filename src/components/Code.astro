@@ -1,6 +1,6 @@
 ---
 // One sample file: its name, a copy button, and the code set directly on the
-// ground with no box. Highlighting is tonal: comments and punctuation are
+// surface behind it with no box. Highlighting is tonal: comments and punctuation are
 // quiet, everything else is ink.
 import { Code as Highlighted } from "astro:components";
 import type { ComponentProps } from "astro/types";
@@ -22,7 +22,7 @@ const id = Astro.props.id ?? `code-${name.toLowerCase().replace(/[^a-z0-9]+/g, "
 <figure>
   <figcaption>
     <span class="name quiet">{name}</span>
-    <CopyButton target={id} label="Copy" variant="text" />
+    <CopyButton target={id} label="Copy" />
   </figcaption>
   <Highlighted {id} {code} {lang} theme="css-variables" />
 </figure>

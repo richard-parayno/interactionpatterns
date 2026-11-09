@@ -1,7 +1,8 @@
 /*
- * The whole visual system: a grey ground, black text, one coloured key.
- * Two type sizes and one weight. Hierarchy comes from space and position,
- * surfaces are told apart by tone, and nothing is drawn with a line.
+ * The whole visual system: a grey ground and black text, in two type sizes
+ * and one weight. Hierarchy comes from space and position, and surfaces are
+ * told apart by tone. The only lines and the only colour are on the macOS
+ * window that holds a pattern (Window.astro).
  */
 
 :root {
@@ -9,10 +10,9 @@
 
   /* Colour */
   --ground: #ececec; /* the page */
-  --panel: #ffffff; /* the live demo stage */
+  --panel: #ffffff; /* the window and the live demo stage */
   --ink: #000000;
   --quiet: #5c5c5c; /* secondary text; 5.6:1 on ground */
-  --key: #f54a00; /* the copy key, the only colour on the site; 3:1 on ground */
 
   /* Type */
   --font-sans: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -97,7 +97,7 @@ a {
   text-decoration: none;
 }
 
-/* A link inside running text is the one place an underline is allowed. */
+/* Underlines mark links inside running text, and the copy buttons. */
 p a {
   text-decoration: underline;
   text-decoration-thickness: 1px;
@@ -137,7 +137,7 @@ samp {
 
 /*
  * The page grid: one column on small screens, two from 50rem. The first is
- * the narrow one (the site name, a pattern's name and copy key); content
+ * the narrow one (the site name, a pattern's name and links); content
  * takes the second, which is twice as wide. A page can set --grid-columns to
  * change the split.
  */

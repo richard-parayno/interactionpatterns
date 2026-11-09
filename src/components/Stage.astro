@@ -1,6 +1,6 @@
 ---
-// The frame a live demo runs in: a white panel on the grey ground, told apart
-// by tone alone. The demo is centred and keeps its own casing.
+// The surface a live demo runs on: a white panel, with the demo centred and
+// keeping its own casing. In a flush <WindowView> it fills the window.
 ---
 
 <div class="stage">
@@ -13,7 +13,7 @@
     contain: layout;
     display: grid;
     place-items: center;
-    min-height: 22rem;
+    min-height: max(22rem, 100%);
     padding: var(--space-5) var(--space-3);
     background: var(--panel);
     font-size: 1rem;
