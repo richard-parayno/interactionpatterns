@@ -1,14 +1,24 @@
 ---
+import "../styles/fonts.css";
+import "../styles/global.css";
+// Preloaded so the first paint is already in Archivo; the mono face is only
+// used by code samples and loads when one is on the page.
+import sansFont from "../assets/fonts/archivo/Archivo-Variable-Latin.woff2?url";
+
 interface Props {
-  /** Page title; the site name is appended except on the home page. */
+  /** Page title; omit on the home page. */
   title?: string;
   description: string;
 }
 
-const siteName = "Interaction Patterns";
 const { title, description } = Astro.props;
-const documentTitle = title ? `${title} — ${siteName}` : siteName;
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+const siteName = "Interaction Patterns";
+const pageTitle = title ? `${title} — ${siteName}` : siteName;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const isHome = Astro.url.pathname === "/";
+// The site name is the page heading on the home page only.
+const SiteName = isHome ? "h1" : "div";
 ---
 
 <!doctype html>
@@ -17,49 +27,57 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="generator" content={Astro.generator} />
-    <title>{documentTitle}</title>
+    <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonicalURL} />
+    <link rel="canonical" href={canonical} />
     <link rel="sitemap" href="/sitemap-index.xml" />
-    <meta property="og:title" content={documentTitle} />
+    <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:url" content={canonical} />
     <meta property="og:type" content="website" />
+    <link rel="preload" href={sansFont} as="font" type="font/woff2" crossorigin />
   </head>
   <body>
-    <header class="site-header">
-      <a href="/">{siteName}</a>
+    <header class="grid">
+      <SiteName>
+        <a href="/" aria-current={isHome ? "page" : undefined}>interactionpatterns</a>
+      </SiteName>
+      {
+        Astro.slots.has("intro") && (
+          <p class="intro quiet">
+            <slot name="intro" />
+          </p>
+        )
+      }
     </header>
     <main>
       <slot />
     </main>
+    <footer class="quiet">
+      <slot name="footer">
+        <p>Collected by <a href="https://richardparayno.com">Richard Parayno</a></p>
+      </slot>
+    </footer>
   </body>
 </html>
 
-<style is:global>
-  /* Structure only; the visual design system replaces this */
-  body {
-    margin: 0;
-    font-family: system-ui, sans-serif;
-    line-height: 1.5;
+<style>
+  header {
+    row-gap: var(--space-2);
+    margin-bottom: var(--section-gap);
   }
 
-  .site-header,
-  main {
-    width: min(100% - 2rem, 60rem);
-    margin: 0 auto;
+  .intro {
+    max-width: 26rem;
   }
 
-  .site-header {
-    padding: 2rem 0;
+  footer {
+    margin-top: var(--space-21);
   }
 
-  main {
-    padding-bottom: 6rem;
-  }
-
-  img {
-    max-width: 100%;
-    height: auto;
+  @media (min-width: 50rem) {
+    .intro {
+      grid-column: 2 / -1;
+    }
   }
 </style>

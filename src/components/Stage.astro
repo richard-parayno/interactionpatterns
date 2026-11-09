@@ -1,0 +1,22 @@
+---
+// The frame a live demo runs in: a white panel on the grey ground, told apart
+// by tone alone. The demo is centred and keeps its own casing.
+---
+
+<div class="stage">
+  <slot />
+</div>
+
+<style>
+  .stage {
+    /* Fixed-position demo UI stays inside the frame. */
+    contain: layout;
+    display: grid;
+    place-items: center;
+    min-height: 22rem;
+    padding: var(--space-5) var(--space-3);
+    background: var(--panel);
+    font-size: 1rem;
+    text-transform: none;
+  }
+</style>

@@ -1,5 +1,5 @@
 ---
-import { Image } from "astro:assets";
+import PatternList from "../components/PatternList.astro";
 import { getPatterns } from "../data/patterns";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
@@ -7,35 +7,15 @@ const patterns = await getPatterns();
 ---
 
 <BaseLayout description="Interaction design patterns worth reusing, each with a live demo, sample code, and a prompt for AI agents.">
-  <h1>Interaction Patterns</h1>
-  <p>Interaction design patterns worth reusing, each with a live demo, sample code, and a prompt for AI agents.</p>
-
-  <ol class="pattern-list">
-    {
-      patterns.map(({ entry }) => (
-        <li>
-          <a href={`/patterns/${entry.id}/`}>
-            <Image src={entry.data.screenshot} alt="" width={480} />
-            <h2>{entry.data.name}</h2>
-          </a>
-          <p>{entry.data.summary}</p>
-        </li>
-      ))
-    }
-  </ol>
+  <Fragment slot="intro">
+    Interaction patterns I like and expect to reuse. Each one comes with a prompt you can paste into an AI agent.
+  </Fragment>
+  <PatternList
+    patterns={patterns.map(({ entry }) => ({
+      href: `/patterns/${entry.id}/`,
+      name: entry.data.name,
+      summary: entry.data.summary,
+      screenshot: entry.data.screenshot,
+    }))}
+  />
 </BaseLayout>
-
-<style>
-  .pattern-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-    gap: 2rem;
-    margin: 4rem 0 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .pattern-list img {
-    display: block;
-  }
-</style>

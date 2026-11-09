@@ -1,0 +1,133 @@
+---
+// The index: pattern names in the large size, each with its summary beside it.
+// The first grid column is left empty; while a row is hovered or focused its
+// screenshot appears there, at the top of the list or of the window, whichever
+// is lower. Small and touch screens get text only.
+import { Image } from "astro:assets";
+
+interface Props {
+  patterns: {
+    href: string;
+    name: string;
+    summary: string;
+    screenshot?: ImageMetadata;
+  }[];
+}
+
+const { patterns } = Astro.props;
+---
+
+<ul class="grid" role="list">
+  {
+    patterns.map(({ href, name, summary, screenshot }) => (
+      <li>
+        {screenshot && (
+          <div class="preview">
+            <Image src={screenshot} alt="" widths={[480, 960, 1280]} sizes="33vw" loading="lazy" />
+          </div>
+        )}
+        <a {href}>
+          <span class="name">{name}</span>
+          <span class="summary">{summary}</span>
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  ul {
+    position: relative;
+    row-gap: var(--space-3);
+  }
+
+  li {
+    grid-column: 1 / -1;
+  }
+
+  a {
+    display: block;
+  }
+
+  .name {
+    display: block;
+    font-size: var(--text-large);
+    line-height: var(--leading-large);
+    letter-spacing: var(--tracking-large);
+  }
+
+  .summary {
+    display: block;
+    margin-top: var(--space-1);
+    max-width: 26rem;
+    color: var(--quiet);
+  }
+
+  .preview {
+    display: none;
+  }
+
+  /* Pointing at one row sets the others back. */
+  ul:has(a:hover) a:not(:hover),
+  ul:has(a:focus-visible) a:not(:focus-visible) {
+    color: var(--quiet);
+  }
+
+  @media (min-width: 50rem) {
+    li {
+      display: grid;
+      grid-template-columns: subgrid;
+    }
+
+    a {
+      grid-column: 2 / -1;
+    }
+  }
+
+  /* Wide enough for the summary to sit beside the name. */
+  @media (min-width: 72rem) {
+    ul {
+      row-gap: 0;
+    }
+
+    li {
+      /* Room for a two-line summary, so every row is the same height. */
+      min-height: 3.5rem;
+    }
+
+    a {
+      display: grid;
+      grid-template-columns: subgrid;
+      align-items: baseline;
+      align-content: start;
+    }
+
+    .summary {
+      margin-top: 0;
+    }
+  }
+
+  @media (min-width: 50rem) and (hover: hover) {
+    /* A track down the first column, as tall as the list. The image sticks
+       to the top of it, so it stays in view however long the list is. */
+    .preview {
+      display: block;
+      position: absolute;
+      inset-block: 0;
+      left: 0;
+      width: calc((100% - 2 * var(--gutter)) / 3);
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .preview :global(img) {
+      position: sticky;
+      top: var(--page-pad);
+    }
+
+    li:has(a:hover) .preview,
+    li:has(a:focus-visible) .preview {
+      visibility: visible;
+    }
+  }
+</style>

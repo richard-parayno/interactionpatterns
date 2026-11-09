@@ -1,5 +1,7 @@
 import { getCollection, type CollectionEntry } from "astro:content";
+import type { Code } from "astro:components";
 import type { AstroComponentFactory } from "astro/runtime/server/index.js";
+import type { ComponentProps } from "astro/types";
 
 // Demos and sample code sit next to each pattern's index.md; Vite bundles
 // them at build time, keyed by path relative to this file.
@@ -12,9 +14,11 @@ const sources = import.meta.glob<string>(
   { eager: true, query: "?raw", import: "default" },
 );
 
+type Lang = ComponentProps<typeof Code>["lang"];
+
 export interface CodeFile {
   name: string;
-  lang: string;
+  lang: Lang;
   code: string;
 }
 
@@ -25,7 +29,7 @@ export interface Pattern {
   code: CodeFile[];
 }
 
-const langs: Record<string, string> = {
+const langs: Record<string, Lang> = {
   astro: "astro",
   html: "html",
   css: "css",

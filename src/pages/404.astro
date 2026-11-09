@@ -1,8 +1,11 @@
 ---
+import PageGrid from "../components/PageGrid.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout title="Not found" description="This page does not exist.">
-  <h1>Not found</h1>
-  <p><a href="/">All patterns</a></p>
+  <PageGrid>
+    <h1>Not found</h1>
+    <p><a href="/">All patterns</a></p>
+  </PageGrid>
 </BaseLayout>

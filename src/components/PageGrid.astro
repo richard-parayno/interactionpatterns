@@ -1,0 +1,38 @@
+---
+// Rail and main column of a page. The rail is the first of the three grid
+// columns and stays in view while the main column scrolls; without a rail
+// that column is left empty.
+const hasRail = Astro.slots.has("rail");
+---
+
+<div class="grid">
+  {
+    hasRail && (
+      <div class="rail">
+        <slot name="rail" />
+      </div>
+    )
+  }
+  <div class="main">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .rail {
+    margin-bottom: var(--space-8);
+  }
+
+  @media (min-width: 50rem) {
+    .rail {
+      position: sticky;
+      top: var(--page-pad);
+      align-self: start;
+      margin-bottom: 0;
+    }
+
+    .main {
+      grid-column: 2 / -1;
+    }
+  }
+</style>

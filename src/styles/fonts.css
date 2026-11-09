@@ -1,0 +1,15 @@
+@font-face {
+  font-family: "Archivo";
+  src: url("../assets/fonts/archivo/Archivo-Variable-Latin.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Ioskeley Mono";
+  src: url("../assets/fonts/ioskeley-mono/IoskeleyMono-Regular-Latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

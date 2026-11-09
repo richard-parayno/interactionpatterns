@@ -1,0 +1,18 @@
+---
+// A pattern's screenshot at the full width of the main column, unframed.
+import { Image } from "astro:assets";
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+}
+
+const { src, alt } = Astro.props;
+---
+
+<Image
+  {src}
+  {alt}
+  widths={[640, 960, 1280, 1920]}
+  sizes="(min-width: 50rem) 66vw, 100vw"
+/>

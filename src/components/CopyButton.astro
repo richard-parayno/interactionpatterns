@@ -1,36 +1,119 @@
 ---
-// Copies the text content of the element with id `target`.
+// Copies the text of another element. The "key" variant is the round coloured
+// key that copies the agent prompt, and the only colour on the site; use it
+// once per page. The "text" variant is a plain text button for code samples.
 interface Props {
+  /** id of the element whose text is copied. */
   target: string;
   label?: string;
+  variant?: "key" | "text";
 }
 
-const { target, label = "Copy prompt" } = Astro.props;
+const { target, label = "Copy prompt", variant = "key" } = Astro.props;
 ---
 
-<button type="button" class="copy-button" data-copy-target={target} data-label={label}>
-  <span aria-live="polite">{label}</span>
+<button type="button" class={variant} data-copy-target={target} data-copy-label={label}>
+  <span data-copy-text>{label}</span>
 </button>
+<span class="visually-hidden" role="status" data-copy-status={target}></span>
 
 <script>
-  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy-target]")) {
-    const status = button.querySelector("span")!;
-    let reset: number | undefined;
+  const RESET_MS = 1800;
+  const resetTimers = new WeakMap<HTMLButtonElement, number>();
 
-    button.addEventListener("click", async () => {
-      const source = document.getElementById(button.dataset.copyTarget!)!;
-
-      try {
-        await navigator.clipboard.writeText(source.textContent ?? "");
-        status.textContent = "Copied";
-      } catch {
-        // Clipboard access can be denied; select the text so a keyboard copy works.
-        getSelection()?.selectAllChildren(source);
-        status.textContent = "Selected, press Ctrl+C";
-      }
-
-      clearTimeout(reset);
-      reset = window.setTimeout(() => (status.textContent = button.dataset.label!), 2000);
-    });
+  function selectText(element: HTMLElement) {
+    const range = document.createRange();
+    range.selectNodeContents(element);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(range);
   }
+
+  function show(button: HTMLButtonElement, state: "copied" | "selected", announcement: string) {
+    const text = button.querySelector("[data-copy-text]");
+    const status = document.querySelector(`[data-copy-status="${button.dataset.copyTarget}"]`);
+    if (!text || !status) return;
+
+    button.dataset.state = state;
+    text.textContent = state === "copied" ? "Copied" : "Selected";
+    status.textContent = announcement;
+
+    window.clearTimeout(resetTimers.get(button));
+    resetTimers.set(
+      button,
+      window.setTimeout(() => {
+        delete button.dataset.state;
+        text.textContent = button.dataset.copyLabel ?? "";
+        status.textContent = "";
+      }, RESET_MS),
+    );
+  }
+
+  document.addEventListener("click", async (event) => {
+    if (!(event.target instanceof Element)) return;
+    const button = event.target.closest<HTMLButtonElement>("button[data-copy-target]");
+    const target = button && document.getElementById(button.dataset.copyTarget ?? "");
+    if (!button || !target) return;
+
+    try {
+      await navigator.clipboard.writeText(target.textContent ?? "");
+      show(button, "copied", "Copied");
+    } catch {
+      // No clipboard access (permissions, insecure origin): leave the text
+      // selected so one keystroke finishes the job.
+      selectText(target);
+      show(button, "selected", "Could not copy. The text is selected; press Ctrl+C or Command+C.");
+    }
+  });
 </script>
+
+<style>
+  button {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .key {
+    display: grid;
+    place-items: center;
+    width: 5.5rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--key);
+    line-height: 1.15;
+    text-align: center;
+    transition: transform 80ms;
+  }
+
+  /* One word per line, so "copy prompt" stacks inside the circle. */
+  .key span {
+    width: min-content;
+  }
+
+  .key:hover {
+    background: color-mix(in srgb, var(--key), var(--ink) 10%);
+  }
+
+  .key:active {
+    transform: scale(0.95);
+  }
+
+  .key[data-state] {
+    background: var(--ink);
+    color: var(--ground);
+  }
+
+  .text[data-state] {
+    color: var(--quiet);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .key {
+      transition: none;
+    }
+  }
+</style>

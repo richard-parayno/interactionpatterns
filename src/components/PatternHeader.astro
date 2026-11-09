@@ -1,0 +1,28 @@
+---
+// Name and summary of a pattern, set small in the rail so the prompt beside
+// it is the largest thing on the page. The default slot holds the copy key.
+interface Props {
+  name: string;
+  summary: string;
+}
+
+const { name, summary } = Astro.props;
+---
+
+<div>
+  <h1>{name}</h1>
+  <p class="quiet">{summary}</p>
+  <slot />
+</div>
+
+<style>
+  div {
+    display: grid;
+    justify-items: start;
+    max-width: 22rem;
+  }
+
+  p {
+    margin-bottom: var(--space-5);
+  }
+</style>

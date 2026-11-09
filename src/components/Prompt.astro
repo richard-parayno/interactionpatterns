@@ -1,0 +1,26 @@
+---
+// The agent prompt, shown verbatim in the large size: the biggest text on a
+// pattern page. Pair it with <CopyButton target={id} />.
+interface Props {
+  /** Element id the copy button targets. */
+  id?: string;
+  /** The prompt exactly as it should be pasted. */
+  text: string;
+}
+
+const { id = "prompt", text } = Astro.props;
+---
+
+<pre {id}>{text}</pre>
+
+<style>
+  pre {
+    max-width: 34em;
+    font-family: var(--font-sans);
+    font-size: var(--text-large);
+    line-height: var(--leading-large);
+    letter-spacing: var(--tracking-large);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+</style>

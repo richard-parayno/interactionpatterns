@@ -5,11 +5,15 @@ has a name, a screenshot, a live demo, sample code, and a copy-pastable prompt
 for AI coding agents. Built as a static site with [Astro](https://astro.build/)
 and deployed to Cloudflare Workers.
 
+![A pattern page: the name and an orange copy-prompt key in the left rail, the agent prompt set large beside it](docs/screenshot.png)
+
 ## Stack
 
 - Astro 7 for pages, layouts, and static-site generation
 - An Astro content collection for patterns, one folder per pattern
 - Shiki (Astro's built-in `<Code>`) for sample-code highlighting
+- Plain CSS: design tokens in `src/styles/global.css`, scoped styles per component
+- Self-hosted OFL fonts: Archivo for text, Ioskeley Mono for code
 - Bun for JavaScript dependencies and scripts
 - `devenv` or mise (`.tool-versions`) for the project-local Bun toolchain
 - Cloudflare Workers static assets for hosting
@@ -18,21 +22,35 @@ and deployed to Cloudflare Workers.
 
 ```text
 .
+├── docs/
+│   └── screenshot.png            # README screenshot
 ├── public/                       # Static files copied directly into the build
 ├── src/
+│   ├── assets/fonts/             # Archivo and Ioskeley Mono, each with OFL.txt and SOURCE.md
 │   ├── components/
-│   │   └── CopyButton.astro      # Copies an element's text to the clipboard
+│   │   ├── PageGrid.astro        # Sticky rail and main column
+│   │   ├── PatternList.astro     # Index list; screenshot previews on hover or focus
+│   │   ├── PatternHeader.astro   # Pattern name and summary in the rail
+│   │   ├── Prompt.astro          # The agent prompt, shown verbatim
+│   │   ├── CopyButton.astro      # Copies an element's text to the clipboard
+│   │   ├── Section.astro         # Labelled page section
+│   │   ├── Stage.astro           # Frame for the live demo
+│   │   ├── Screenshot.astro
+│   │   └── Code.astro            # One sample file with its own copy button
 │   ├── content/
 │   │   └── patterns/<slug>/      # One folder per pattern (see below)
 │   ├── content.config.ts         # Pattern schema and loader
 │   ├── data/
 │   │   └── patterns.ts           # Joins each entry with its demo and code files
 │   ├── layouts/
-│   │   └── BaseLayout.astro      # Document shell and page metadata
-│   └── pages/
-│       ├── index.astro           # Pattern index
-│       ├── patterns/[slug].astro # Pattern page template
-│       └── 404.astro
+│   │   └── BaseLayout.astro      # Document shell, page metadata, site header and footer
+│   ├── pages/
+│   │   ├── index.astro           # Pattern index
+│   │   ├── patterns/[slug].astro # Pattern page template
+│   │   └── 404.astro
+│   └── styles/
+│       ├── global.css            # Tokens, reset, page grid
+│       └── fonts.css
 ├── astro.config.mjs
 ├── bun.lock
 ├── bunfig.toml                   # Bun install policy
@@ -92,7 +110,11 @@ the copy button copies exactly this text.
 - **Live demo**: `Demo.astro` is rendered inside the page. Its `<style>` is
   scoped by Astro and its `<script>` is bundled once, so write scripts that set
   up every matching element (`querySelectorAll`). The demo frame uses
-  `contain: layout`, so fixed-position UI stays inside it.
+  `contain: layout`, so fixed-position UI stays inside it, and resets font
+  size and casing, so a demo starts from 1rem and brings its own styles.
+- **Name and summary**: write them in sentence case. The site lowercases its
+  own text through the `--case` token in `src/styles/global.css`; prompts,
+  code, demos, and file names keep their casing.
 - **Sample code**: the files listed in `code`, read from the pattern folder
   and highlighted by extension. Showing `Demo.astro` itself keeps the code and
   the demo in sync; add other files (`.html`, `.css`, `.ts`, `.tsx`, …) for
