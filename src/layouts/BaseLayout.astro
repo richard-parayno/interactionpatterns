@@ -9,9 +9,15 @@ interface Props {
   /** Page title; omit on the home page. */
   title?: string;
   description: string;
+  /**
+   * Makes the page exactly one screen tall, in two equal columns, with the
+   * content filling the height between header and footer. For the index,
+   * whose list scrolls inside the page.
+   */
+  fit?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, fit = false } = Astro.props;
 
 const siteName = "Interaction Patterns";
 const pageTitle = title ? `${title} — ${siteName}` : siteName;
@@ -37,7 +43,7 @@ const SiteName = isHome ? "h1" : "div";
     <meta property="og:type" content="website" />
     <link rel="preload" href={sansFont} as="font" type="font/woff2" crossorigin />
   </head>
-  <body>
+  <body class:list={{ fit }}>
     <header class="grid">
       <SiteName>
         <a href="/" aria-current={isHome ? "page" : undefined}>interactionpatterns</a>
@@ -57,6 +63,7 @@ const SiteName = isHome ? "h1" : "div";
       <slot name="footer">
         <p>Collected by <a href="https://richardparayno.com">Richard Parayno</a></p>
       </slot>
+      <slot name="footer-end" />
     </footer>
   </body>
 </html>
@@ -72,12 +79,44 @@ const SiteName = isHome ? "h1" : "div";
   }
 
   footer {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--gutter);
     margin-top: var(--space-21);
   }
 
   @media (min-width: 50rem) {
     .intro {
       grid-column: 2 / -1;
+    }
+
+    .fit {
+      --grid-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  /* Only with scripting, because without it the index is an ordinary list. */
+  @media (scripting: enabled) {
+    .fit {
+      display: flex;
+      flex-direction: column;
+      /* A height, not a minimum, so content that can shrink (the drum) gives
+         way on short screens before the page starts to scroll. */
+      height: 100svh;
+    }
+
+    .fit main {
+      display: flex;
+      flex: 1 1 0;
+      flex-direction: column;
+    }
+
+    .fit header {
+      margin-bottom: var(--space-5);
+    }
+
+    .fit footer {
+      margin-top: var(--space-3);
     }
   }
 </style>

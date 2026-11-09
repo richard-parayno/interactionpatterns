@@ -136,9 +136,10 @@ samp {
 }
 
 /*
- * The page grid: one column on small screens, three equal columns from 50rem.
- * The first column is the rail (labels, the copy key, or nothing at all);
- * content takes the other two.
+ * The page grid: one column on small screens, two from 50rem. The first is
+ * the narrow one (the site name, a pattern's name and copy key); content
+ * takes the second, which is twice as wide. A page can set --grid-columns to
+ * change the split.
  */
 .grid {
   display: grid;
@@ -148,7 +149,7 @@ samp {
 
 @media (min-width: 50rem) {
   .grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: var(--grid-columns, minmax(0, 1fr) minmax(0, 2fr));
   }
 }
 

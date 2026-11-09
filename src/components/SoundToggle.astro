@@ -1,0 +1,31 @@
+---
+// Turns the index drum's tick sound on and off. PatternList finds it by its
+// data-sound attribute, so it can sit anywhere on the page; BaseLayout's
+// "footer-end" slot puts it level with the footer. Hidden without scripting,
+// when there is no sound to turn off.
+---
+
+<button type="button" class="quiet" role="switch" aria-checked="true" data-sound>
+  Sound <span aria-hidden="true" data-sound-state>on</span>
+</button>
+
+<style>
+  button {
+    display: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+
+  button:hover {
+    color: var(--ink);
+  }
+
+  @media (scripting: enabled) {
+    button {
+      display: block;
+    }
+  }
+</style>

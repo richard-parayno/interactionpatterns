@@ -29,7 +29,8 @@ and deployed to Cloudflare Workers.
 │   ├── assets/fonts/             # Archivo and Ioskeley Mono, each with OFL.txt and SOURCE.md
 │   ├── components/
 │   │   ├── PageGrid.astro        # Sticky rail and main column
-│   │   ├── PatternList.astro     # Index list; screenshot previews on hover or focus
+│   │   ├── PatternList.astro     # Index wheel picker; the centred pattern's screenshot and summary
+│   │   ├── SoundToggle.astro     # Turns the wheel's tick sound on or off
 │   │   ├── PatternHeader.astro   # Pattern name and summary in the rail
 │   │   ├── Prompt.astro          # The agent prompt, shown verbatim
 │   │   ├── CopyButton.astro      # Copies an element's text to the clipboard

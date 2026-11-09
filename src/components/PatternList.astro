@@ -1,8 +1,14 @@
 ---
-// The index: pattern names in the large size, each with its summary beside it.
-// The first grid column is left empty; while a row is hovered or focused its
-// screenshot appears there, at the top of the list or of the window, whichever
-// is lower. Small and touch screens get text only.
+// The index as a drum, like a wheel of a phone's date picker. Pattern names
+// roll past a fixed centre line, settle on it one row at a time, and tick as
+// each one passes. The row on the line is selected: its screenshot and
+// summary show in the second column (above the drum on small screens), and
+// pressing it opens the pattern; pressing another row turns the drum to it.
+// Without scripting this is a plain list of names and summaries.
+//
+// The drum fills whatever height its parent gives it; BaseLayout's `fit`
+// makes that the rest of the screen. Put <SoundToggle /> anywhere on the page
+// to let people turn the tick off.
 import { Image } from "astro:assets";
 
 interface Props {
@@ -17,27 +23,291 @@ interface Props {
 const { patterns } = Astro.props;
 ---
 
-<ul class="grid" role="list">
-  {
-    patterns.map(({ href, name, summary, screenshot }) => (
-      <li>
-        {screenshot && (
-          <div class="preview">
-            <Image src={screenshot} alt="" widths={[480, 960, 1280]} sizes="33vw" loading="lazy" />
-          </div>
-        )}
-        <a {href}>
-          <span class="name">{name}</span>
-          <span class="summary">{summary}</span>
-        </a>
-      </li>
-    ))
+<div class="wheel" data-wheel>
+  <div class="readout grid" aria-hidden="true">
+    <div class="display">
+      <div class="shots">
+        {
+          patterns.map(
+            ({ screenshot }, index) =>
+              screenshot && (
+                <Image
+                  src={screenshot}
+                  alt=""
+                  widths={[480, 960, 1280]}
+                  sizes="(min-width: 50rem) 50vw, 100vw"
+                  loading={index === 0 ? "eager" : "lazy"}
+                  data-shot={index}
+                />
+              ),
+          )
+        }
+      </div>
+      <p class="reading quiet" data-reading></p>
+    </div>
+  </div>
+  <div class="drum">
+    <ul class="grid" role="list">
+      {
+        patterns.map(({ href, name, summary }) => (
+          <li>
+            <a {href}>
+              <span class="name">{name}</span>
+              <span class="summary">{summary}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</div>
+
+<script>
+  // How it works: the rows are laid out flat in a native scroll container
+  // with scroll snapping, so the browser supplies the momentum and the
+  // detents. On every scroll frame each row is redrawn as if it were printed
+  // on a cylinder seen from the side, and whenever a different row reaches
+  // the centre line the display changes and a tick is played and felt.
+
+  /** Radius of the drum in rows; smaller means a tighter curve. Never more than half the drum's height. */
+  const RADIUS_ROWS = 6;
+  /** Viewing distance in radii; smaller means rows shrink more as they turn away. */
+  const DISTANCE = 3;
+  /** How far a row faces the viewer (cosine of its angle) when it has faded out completely; 0.5 is 60°. */
+  const EDGE_FACING = 0.5;
+  const TICK_GAIN = 0.12;
+  const VIBRATE_MS = 4;
+  const SOUND_KEY = "interactionpatterns:sound";
+
+  /** A 12 ms click: a burst of noise over a quickly decaying 1.6 kHz tone. */
+  function createTick(context: AudioContext) {
+    const length = Math.round(context.sampleRate * 0.012);
+    const buffer = context.createBuffer(1, length, context.sampleRate);
+    const samples = buffer.getChannelData(0);
+    for (let i = 0; i < length; i++) {
+      const t = i / context.sampleRate;
+      const noise = (Math.random() * 2 - 1) * Math.exp(-t / 0.0005) * 0.5;
+      const tone = Math.sin(2 * Math.PI * 1600 * t) * Math.exp(-t / 0.002);
+      samples[i] = noise + tone;
+    }
+    return buffer;
   }
-</ul>
+
+  function readSoundPreference() {
+    try {
+      return localStorage.getItem(SOUND_KEY) !== "off";
+    } catch {
+      return true;
+    }
+  }
+
+  function createFeedback(toggle: HTMLButtonElement | null) {
+    let context: AudioContext | undefined;
+    let tick: AudioBuffer | undefined;
+    let soundOn = readSoundPreference();
+
+    const showState = () => {
+      toggle?.setAttribute("aria-checked", String(soundOn));
+      const state = toggle?.querySelector("[data-sound-state]");
+      if (state) state.textContent = soundOn ? "on" : "off";
+    };
+    showState();
+
+    // Browsers only let a page make sound after a press, tap or key press
+    // (scrolling does not count), so the audio is started on the first one.
+    const unlock = () => {
+      if (!soundOn || !("AudioContext" in window)) return;
+      context ??= new AudioContext({ latencyHint: "interactive" });
+      tick ??= createTick(context);
+      if (context.state !== "running") void context.resume();
+    };
+    for (const type of ["pointerdown", "pointerup", "touchend", "keydown"]) {
+      document.addEventListener(type, unlock, { capture: true, passive: true });
+    }
+
+    toggle?.addEventListener("click", () => {
+      soundOn = !soundOn;
+      try {
+        localStorage.setItem(SOUND_KEY, soundOn ? "on" : "off");
+      } catch {
+        // Private browsing: the choice lasts for this page only.
+      }
+      showState();
+      unlock();
+    });
+
+    return () => {
+      if (soundOn && context?.state === "running" && tick) {
+        const source = context.createBufferSource();
+        const gain = context.createGain();
+        source.buffer = tick;
+        gain.gain.value = TICK_GAIN;
+        source.connect(gain).connect(context.destination);
+        source.start();
+      }
+      // Android only: Safari has no vibration API, and Chrome ignores the
+      // call until the page has been tapped.
+      if (navigator.userActivation?.hasBeenActive) navigator.vibrate?.(VIBRATE_MS);
+    };
+  }
+
+  function createWheel(wheel: HTMLElement) {
+    const scroller = wheel.querySelector("ul");
+    const reading = wheel.querySelector("[data-reading]");
+    if (!scroller || !reading) return;
+
+    const rows = [...scroller.children] as HTMLElement[];
+    const links = rows.map((row) => row.querySelector("a") as HTMLAnchorElement);
+    const shots = rows.map((_, index) => wheel.querySelector<HTMLElement>(`[data-shot="${index}"]`));
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const feedback = createFeedback(document.querySelector<HTMLButtonElement>("[data-sound]"));
+    const clamp = (index: number) => Math.min(rows.length - 1, Math.max(0, index));
+
+    let selected = -1;
+    let target = 0; // where the keyboard is heading while a smooth scroll runs
+    let frame = 0;
+    let settle = 0;
+
+    function select(index: number) {
+      if (index === selected) return;
+      rows[selected]?.removeAttribute("data-selected");
+      shots[selected]?.removeAttribute("data-selected");
+      const first = selected === -1;
+      selected = index;
+      rows[index].setAttribute("data-selected", "");
+      shots[index]?.setAttribute("data-selected", "");
+      reading!.textContent = rows[index].querySelector(".summary")?.textContent ?? "";
+      if (!first) feedback();
+    }
+
+    function draw() {
+      frame = 0;
+      const rowHeight = rows[0].offsetHeight;
+      const radius = Math.min(scroller!.clientHeight / 2, rowHeight * RADIUS_ROWS);
+      const position = scroller!.scrollTop / rowHeight; // fractional row on the centre line
+      select(clamp(Math.round(position)));
+
+      rows.forEach((_, index) => {
+        const style = links[index].style;
+        if (reducedMotion.matches) {
+          style.transform = style.opacity = style.pointerEvents = "";
+          return;
+        }
+        // A row's flat distance from the centre line is its arc length round
+        // the drum. Seen from the front, that arc sits at radius × sin(angle)
+        // and is smaller for being further away. Rows fade out before they
+        // turn edge-on, where the squashed names are unreadable.
+        const arc = (index - position) * rowHeight;
+        const angle = arc / radius;
+        const facing = Math.abs(angle) < Math.PI / 2 ? Math.cos(angle) : 0;
+        const visible = (facing - EDGE_FACING) / (1 - EDGE_FACING);
+        if (visible <= 0) {
+          style.transform = "";
+          style.opacity = "0";
+          style.pointerEvents = "none";
+          return;
+        }
+        const size = DISTANCE / (DISTANCE + 1 - facing);
+        const turned = Math.sin(angle);
+        const y = radius * turned * size - arc;
+        // A row is as tall as the gap to the next one: the rate at which y
+        // changes along the arc. Anything taller and far rows overlap.
+        const height = size * facing - (size * size * turned * turned) / DISTANCE;
+        style.transform = `translateY(${y.toFixed(2)}px) scale(${size.toFixed(4)}, ${height.toFixed(4)})`;
+        style.opacity = visible.toFixed(3);
+        style.pointerEvents = "";
+      });
+    }
+
+    const schedule = () => {
+      frame ||= requestAnimationFrame(draw);
+    };
+
+    function turnTo(index: number) {
+      target = clamp(index);
+      scroller!.scrollTo({
+        top: target * rows[0].offsetHeight,
+        behavior: reducedMotion.matches ? "instant" : "smooth",
+      });
+    }
+
+    scroller.addEventListener(
+      "scroll",
+      () => {
+        schedule();
+        window.clearTimeout(settle);
+        settle = window.setTimeout(() => {
+          target = selected;
+          // Remembered with this history entry, so Back from a pattern
+          // returns to the row it was opened from.
+          history.replaceState({ ...history.state, wheel: selected }, "");
+        }, 150);
+      },
+      { passive: true },
+    );
+    new ResizeObserver(schedule).observe(scroller);
+    reducedMotion.addEventListener("change", schedule);
+
+    // Tabbing to a row turns the drum to it.
+    scroller.addEventListener("focusin", (event) => {
+      const index = links.indexOf(event.target as HTMLAnchorElement);
+      if (index !== -1 && index !== target) turnTo(index);
+    });
+
+    // As on a picker, pressing a row that is not on the centre line brings it
+    // there; pressing the selected row opens it. Keyboard activation and
+    // modified clicks (new tab, new window) always follow the link.
+    scroller.addEventListener("click", (event) => {
+      if (event.detail === 0 || event.button !== 0) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      const index = links.findIndex((link) => link.contains(event.target as Node));
+      if (index === -1 || index === selected) return;
+      event.preventDefault();
+      turnTo(index);
+    });
+
+    // Arrow keys turn the drum one row at a time from anywhere on the page;
+    // Enter opens the selected pattern.
+    const steps: Record<string, number> = {
+      ArrowDown: 1,
+      ArrowUp: -1,
+      PageDown: 5,
+      PageUp: -5,
+      End: Infinity,
+      Home: -Infinity,
+    };
+    document.addEventListener("keydown", (event) => {
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) return;
+      const focused = document.activeElement;
+      const inWheel = focused instanceof HTMLAnchorElement && links.includes(focused);
+      if (!inWheel && focused !== document.body) return;
+
+      if (event.key in steps) {
+        event.preventDefault();
+        turnTo(target + steps[event.key]);
+        if (inWheel) links[target].focus({ preventScroll: true });
+      } else if (event.key === "Enter" && !inWheel) {
+        links[selected]?.click();
+      }
+    });
+
+    const remembered: unknown = history.state?.wheel;
+    if (typeof remembered === "number") {
+      target = clamp(remembered);
+      scroller.scrollTop = target * rows[0].offsetHeight;
+    }
+    draw();
+  }
+
+  // Same condition as the wheel's styles, so the two never disagree.
+  if (window.matchMedia("(scripting: enabled)").matches) {
+    document.querySelectorAll<HTMLElement>("[data-wheel]").forEach(createWheel);
+  }
+</script>
 
 <style>
+  /* Without scripting: a plain list, names beside their summaries. */
   ul {
-    position: relative;
     row-gap: var(--space-3);
   }
 
@@ -45,61 +315,38 @@ const { patterns } = Astro.props;
     grid-column: 1 / -1;
   }
 
-  a {
+  a,
+  .name,
+  .summary {
     display: block;
   }
 
   .name {
-    display: block;
     font-size: var(--text-large);
     line-height: var(--leading-large);
     letter-spacing: var(--tracking-large);
   }
 
   .summary {
-    display: block;
     margin-top: var(--space-1);
     max-width: 26rem;
     color: var(--quiet);
   }
 
-  .preview {
+  .readout {
     display: none;
   }
 
-  /* Pointing at one row sets the others back. */
-  ul:has(a:hover) a:not(:hover),
-  ul:has(a:focus-visible) a:not(:focus-visible) {
-    color: var(--quiet);
-  }
-
   @media (min-width: 50rem) {
-    li {
-      display: grid;
-      grid-template-columns: subgrid;
-    }
-
-    a {
-      grid-column: 2 / -1;
-    }
-  }
-
-  /* Wide enough for the summary to sit beside the name. */
-  @media (min-width: 72rem) {
-    ul {
-      row-gap: 0;
-    }
-
-    li {
-      /* Room for a two-line summary, so every row is the same height. */
-      min-height: 3.5rem;
-    }
-
+    li,
     a {
       display: grid;
       grid-template-columns: subgrid;
       align-items: baseline;
-      align-content: start;
+    }
+
+    a {
+      grid-column: 1 / -1;
     }
 
     .summary {
@@ -107,27 +354,169 @@ const { patterns } = Astro.props;
     }
   }
 
-  @media (min-width: 50rem) and (hover: hover) {
-    /* A track down the first column, as tall as the list. The image sticks
-       to the top of it, so it stays in view however long the list is. */
-    .preview {
-      display: block;
+  @media (scripting: enabled) {
+    .wheel {
+      --row: max(2.75rem, calc(var(--text-large) * 1.6));
+      position: relative;
+      display: flex;
+      flex: 1 1 0;
+      flex-direction: column;
+    }
+
+    /* The drum. Its list scrolls inside it; the padding lets the first and
+       last rows reach the centre line. */
+    .drum {
+      position: relative;
+      flex: 1 1 0;
+      min-height: calc(var(--row) * 5);
+      container-type: size;
+    }
+
+    ul {
       position: absolute;
-      inset-block: 0;
-      left: 0;
-      width: calc((100% - 2 * var(--gutter)) / 3);
-      visibility: hidden;
+      inset: 0;
+      align-content: start;
+      row-gap: 0;
+      padding-block: calc(50cqh - var(--row) / 2);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scroll-snap-type: y mandatory;
+      scrollbar-width: none;
+    }
+
+    li {
+      display: block;
+      grid-column: 1;
+      height: var(--row);
+      scroll-snap-align: center;
+    }
+
+    a {
+      display: flex;
+      align-items: center;
+      height: 100%;
+      color: var(--quiet);
+      transform-origin: left center;
+    }
+
+    /* Ink marks the selected row and nothing else, so there is no hover colour. */
+    li[data-selected] a {
+      color: var(--ink);
+    }
+
+    .name {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    /* Still read out with each link; shown in the display for the selected row. */
+    .summary {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    /* The display: the selected pattern's screenshot with its summary under it. */
+    .readout {
+      display: block;
       pointer-events: none;
     }
 
-    .preview :global(img) {
-      position: sticky;
-      top: var(--page-pad);
+    .shots {
+      position: relative;
+      height: clamp(6rem, 24svh, 12rem);
     }
 
-    li:has(a:hover) .preview,
-    li:has(a:focus-visible) .preview {
+    .shots :global(img) {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: auto;
+      max-height: 100%;
+      visibility: hidden;
+    }
+
+    .shots :global(img[data-selected]) {
       visibility: visible;
+    }
+
+    .display {
+      max-width: 26rem;
+    }
+
+    .reading {
+      /* Room for three lines, so the drum below does not move. */
+      min-height: calc(3em * var(--leading-small));
+      margin-top: var(--space-2);
+    }
+  }
+
+  /* One column: the drum sits at the bottom of the screen, under the thumb,
+     five to seven rows tall. The display stands directly on it and any spare
+     height opens up above. Both heights come from the screen's, so the page
+     fits a phone without scrolling. */
+  @media (scripting: enabled) and (max-width: 49.99rem) {
+    .wheel {
+      /* The header, summary and footer around the screenshot and the drum. */
+      --around: 17.5rem;
+      /* A quarter of the screen, less when the drum's five rows need it. */
+      --shot: clamp(4rem, min(24svh, 100svh - var(--around) - var(--row) * 5), 12rem);
+    }
+
+    .readout,
+    .display {
+      display: flex;
+      flex: 1 1 0;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .shots {
+      flex: none;
+      height: var(--shot);
+    }
+
+    .drum {
+      flex: none;
+      height: clamp(calc(var(--row) * 5), calc(100svh - var(--shot) - var(--around)), calc(var(--row) * 7));
+      min-height: 0;
+    }
+  }
+
+  /* Two columns: the drum on the left, the display on the right, with the
+     summary on the centre line beside the selected name and the screenshot
+     standing on it. The list still spans the page, so the wheel or trackpad
+     turns it from anywhere. */
+  @media (scripting: enabled) and (min-width: 50rem) {
+    .readout {
+      display: grid;
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+    }
+
+    .display {
+      position: relative;
+      grid-column: 2;
+    }
+
+    .shots {
+      position: absolute;
+      inset: 0 0 calc(50% + var(--row) / 2);
+      height: auto;
+    }
+
+    .reading {
+      position: absolute;
+      top: 50%;
+      min-height: 0;
+      margin-top: 0;
+      /* Puts the first line on the selected name's baseline. */
+      transform: translateY(calc(var(--text-large) * var(--baseline-shift, 0.34) - 1.05em));
     }
   }
 </style>

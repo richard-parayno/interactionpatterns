@@ -1,12 +1,13 @@
 ---
 import PatternList from "../components/PatternList.astro";
+import SoundToggle from "../components/SoundToggle.astro";
 import { getPatterns } from "../data/patterns";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const patterns = await getPatterns();
 ---
 
-<BaseLayout description="Interaction design patterns worth reusing, each with a live demo, sample code, and a prompt for AI agents.">
+<BaseLayout fit description="Interaction design patterns worth reusing, each with a live demo, sample code, and a prompt for AI agents.">
   <Fragment slot="intro">
     Interaction patterns I like and expect to reuse. Each one comes with a prompt you can paste into an AI agent.
   </Fragment>
@@ -18,4 +19,5 @@ const patterns = await getPatterns();
       screenshot: entry.data.screenshot,
     }))}
   />
+  <SoundToggle slot="footer-end" />
 </BaseLayout>
