@@ -1,0 +1,87 @@
+---
+import { Image } from "astro:assets";
+import { Code } from "astro:components";
+import CopyButton from "../../components/CopyButton.astro";
+import { getPatterns, type Pattern } from "../../data/patterns";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export async function getStaticPaths() {
+  const patterns = await getPatterns();
+
+  return patterns.map((pattern) => ({
+    params: { slug: pattern.entry.id },
+    props: { pattern },
+  }));
+}
+
+interface Props {
+  pattern: Pattern;
+}
+
+const { entry, prompt, Demo, code } = Astro.props.pattern;
+---
+
+<BaseLayout title={entry.data.name} description={entry.data.summary}>
+  <article>
+    <header>
+      <h1>{entry.data.name}</h1>
+      <p>{entry.data.summary}</p>
+    </header>
+
+    <section class="prompt" aria-labelledby="prompt-heading">
+      <h2 id="prompt-heading">Prompt</h2>
+      <CopyButton target="prompt-text" />
+      <pre id="prompt-text">{prompt}</pre>
+    </section>
+
+    <section aria-labelledby="demo-heading">
+      <h2 id="demo-heading">Live</h2>
+      <div class="demo">
+        <Demo />
+      </div>
+    </section>
+
+    <section aria-labelledby="screenshot-heading">
+      <h2 id="screenshot-heading">Screenshot</h2>
+      <Image src={entry.data.screenshot} alt={entry.data.screenshotAlt} width={960} />
+    </section>
+
+    <section aria-labelledby="code-heading">
+      <h2 id="code-heading">Code</h2>
+      {
+        code.map((file) => (
+          <figure>
+            <figcaption>{file.name}</figcaption>
+            <Code code={file.code} lang={file.lang as any} />
+          </figure>
+        ))
+      }
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  section {
+    margin-top: 4rem;
+  }
+
+  .prompt pre {
+    white-space: pre-wrap;
+  }
+
+  /* Contains the demo so fixed-position UI (toasts, sheets) stays inside it */
+  .demo {
+    contain: layout;
+    min-height: 12rem;
+    display: grid;
+    place-items: center;
+  }
+
+  figure {
+    margin: 0 0 2rem;
+  }
+
+  figure :global(pre) {
+    overflow-x: auto;
+  }
+</style>

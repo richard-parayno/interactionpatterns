@@ -1,0 +1,36 @@
+---
+// Copies the text content of the element with id `target`.
+interface Props {
+  target: string;
+  label?: string;
+}
+
+const { target, label = "Copy prompt" } = Astro.props;
+---
+
+<button type="button" class="copy-button" data-copy-target={target} data-label={label}>
+  <span aria-live="polite">{label}</span>
+</button>
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy-target]")) {
+    const status = button.querySelector("span")!;
+    let reset: number | undefined;
+
+    button.addEventListener("click", async () => {
+      const source = document.getElementById(button.dataset.copyTarget!)!;
+
+      try {
+        await navigator.clipboard.writeText(source.textContent ?? "");
+        status.textContent = "Copied";
+      } catch {
+        // Clipboard access can be denied; select the text so a keyboard copy works.
+        getSelection()?.selectAllChildren(source);
+        status.textContent = "Selected, press Ctrl+C";
+      }
+
+      clearTimeout(reset);
+      reset = window.setTimeout(() => (status.textContent = button.dataset.label!), 2000);
+    });
+  }
+</script>

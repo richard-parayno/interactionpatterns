@@ -1,0 +1,12 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "interactionpatterns",
+  "compatibility_date": "2026-11-04",
+  // Static-only Worker: requests are served from the Astro build without running any Worker code
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  },
+  // Previews need no settings of their own while the site is static
+  "previews": {}
+}

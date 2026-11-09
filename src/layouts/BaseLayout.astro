@@ -1,0 +1,65 @@
+---
+interface Props {
+  /** Page title; the site name is appended except on the home page. */
+  title?: string;
+  description: string;
+}
+
+const siteName = "Interaction Patterns";
+const { title, description } = Astro.props;
+const documentTitle = title ? `${title} — ${siteName}` : siteName;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{documentTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalURL} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <meta property="og:title" content={documentTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:type" content="website" />
+  </head>
+  <body>
+    <header class="site-header">
+      <a href="/">{siteName}</a>
+    </header>
+    <main>
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  /* Structure only; the visual design system replaces this */
+  body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    line-height: 1.5;
+  }
+
+  .site-header,
+  main {
+    width: min(100% - 2rem, 60rem);
+    margin: 0 auto;
+  }
+
+  .site-header {
+    padding: 2rem 0;
+  }
+
+  main {
+    padding-bottom: 6rem;
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+</style>
