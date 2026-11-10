@@ -1,0 +1,472 @@
+---
+// Pinned scroll story: one window stays pinned in the centre while the page
+// scrolls, and its contents change one beat at a time, with a caption under it.
+//
+// This demo scrolls inside its own frame, so it sizes the pin in container
+// units (cqh). On a full page, drop the frame and use the svh versions noted
+// below.
+const beats = [
+  {
+    title: "The window pins.",
+    text: "It scrolls in already centred and stays there while the page keeps moving.",
+  },
+  {
+    title: "Scrolling plays the next beat.",
+    text: "The work lands on the invoice. Nothing moves except what is new.",
+  },
+  {
+    title: "The window keeps its size.",
+    text: "The total fills room that was kept for it, so nothing shifts between beats.",
+  },
+  {
+    title: "Then it lets go.",
+    text: "After the last beat the window leaves with the page, from the spot it arrived in.",
+  },
+];
+
+const lines = [
+  { name: "Brand workshop", amount: "$1,200" },
+  { name: "Design sprint, 5 days", amount: "$4,000" },
+  { name: "Handover", amount: "$600" },
+];
+---
+
+<div class="frame" data-story-scroller>
+  <p class="aside">Scroll inside this frame.</p>
+
+  <!--
+    A part is shown from beat data-from (0 if absent) and hidden again from
+    beat data-until. The page is rendered on beat 0; the script moves .on.
+  -->
+  <div class="story" data-story style={`--beats:${beats.length}`}>
+    <div class="track">
+      <div class="pin">
+        <!-- The window is a picture; the captions tell the story. -->
+        <div class="window" aria-hidden="true">
+          <div class="bar">
+            <span class="lights"><i></i><i></i><i></i></span>
+            <span class="title">Invoice 0042</span>
+          </div>
+          <div class="body">
+            <div class="head">
+              <p class="client">
+                Northwind Studio
+                <span class="meta">Due 30 Nov</span>
+              </p>
+              <span class="swap">
+                <span class="part tag on" data-until="3">Draft</span>
+                <span class="part tag paid" data-from="3">Paid</span>
+              </span>
+            </div>
+
+            <ul class="lines">
+              {
+                lines.map((line, i) => (
+                  <li class="swap">
+                    <span class="part ghost on" data-until="1"><i /><i /></span>
+                    <span class="part line" data-from="1" style={`--k:${i}`}>
+                      <span>{line.name}</span>
+                      <span>{line.amount}</span>
+                    </span>
+                  </li>
+                ))
+              }
+            </ul>
+
+            <p class="total">
+              <span>Total</span>
+              <span class="swap end">
+                <span class="part on" data-until="2">–</span>
+                <span class="part" data-from="2">$5,800</span>
+              </span>
+            </p>
+
+            <p class="foot swap">
+              <span class="part on" data-until="3">Not sent yet</span>
+              <span class="part" data-from="3">Paid 12 Nov by bank transfer</span>
+            </p>
+          </div>
+        </div>
+
+        <ol class="captions">
+          {
+            beats.map((beat, i) => (
+              <li
+                class:list={["caption", { on: i === 0 }]}
+                data-from={i}
+                data-until={i < beats.length - 1 ? i + 1 : undefined}
+              >
+                <h3>{beat.title}</h3>
+                <p>{beat.text}</p>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <p class="aside end">The window left as centred as it arrived.</p>
+</div>
+
+<style>
+  .frame {
+    /* Demo only: a scroll container that stands in for the page */
+    container: story / size;
+    width: 100%;
+    height: 32rem;
+    overflow-y: auto;
+  }
+
+  /* The same height above and below, so the start and the end mirror each other */
+  .aside {
+    box-sizing: border-box;
+    height: 4rem;
+    margin: 0;
+    padding: 1.5rem 1.5rem 0;
+    color: #888;
+  }
+
+  .aside.end {
+    display: grid;
+    align-content: end;
+    padding: 0 1.5rem 1.5rem;
+  }
+
+  .story {
+    /* Scroll distance each beat gets (on a page: 60svh) */
+    --step: 55cqh;
+
+    padding-inline: 1.5rem;
+  }
+
+  /* One screen for the pin plus one step per beat
+     (on a page: calc(100svh - var(--header-h) + var(--beats) * var(--step))) */
+  .track {
+    height: calc(100cqh + var(--beats) * var(--step));
+  }
+
+  /*
+   * The pin is one screen high and in normal flow, with the window and the
+   * caption centred in it as one unit. So the window scrolls in at the spot
+   * it will hold, pins without a jump, and leaves from the same spot.
+   * (On a page: top: var(--header-h); height: calc(100svh - var(--header-h)).)
+   */
+  .pin {
+    position: sticky;
+    top: 0;
+    display: grid;
+    align-content: center;
+    gap: 1.25rem;
+    height: 100cqh;
+  }
+
+  .window,
+  .captions {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 26rem;
+    margin: 0 auto;
+  }
+
+  /* Every caption sits in the same cell, so the block is always as tall as
+     the longest one and the window never moves when the caption changes */
+  .captions {
+    display: grid;
+    padding: 0;
+    list-style: none;
+  }
+
+  .caption {
+    grid-area: 1 / 1;
+  }
+
+  .caption h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: inherit;
+    line-height: 1.3;
+  }
+
+  .caption p {
+    margin: 0.375rem 0 0;
+    color: #5c5c5c;
+    line-height: 1.45;
+  }
+
+  /* Parts that replace each other share one cell, sized by the larger */
+  .swap {
+    display: grid;
+  }
+
+  .swap > * {
+    grid-area: 1 / 1;
+  }
+
+  .swap.end > * {
+    justify-self: end;
+  }
+
+  /*
+   * Hidden parts keep their room: opacity, never display: none. Opacity also
+   * leaves every caption readable by a screen reader, in order.
+   * Out is quick; in is slower and starts a moment later, so the old state
+   * clears before the new one settles.
+   */
+  .part,
+  .caption {
+    opacity: 0;
+    transform: translateY(4px);
+    transition:
+      opacity 200ms ease,
+      transform 200ms ease;
+  }
+
+  .part.on,
+  .caption.on {
+    opacity: 1;
+    transform: none;
+    transition:
+      opacity 450ms cubic-bezier(0.2, 0.7, 0.2, 1) calc(120ms + var(--k, 0) * 60ms),
+      transform 450ms cubic-bezier(0.2, 0.7, 0.2, 1) calc(120ms + var(--k, 0) * 60ms);
+  }
+
+  /* Without JavaScript: unpinned, every caption listed, the window in its
+     last state (on a page: @media (max-height: 639px), (scripting: none)) */
+  @media (scripting: none) {
+    .track {
+      height: auto;
+    }
+
+    .pin {
+      position: static;
+      height: auto;
+      padding-block: 2rem;
+    }
+
+    .captions {
+      gap: 1.25rem;
+    }
+
+    .caption {
+      grid-area: auto;
+    }
+
+    .part,
+    .part.on,
+    .caption,
+    .caption.on {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    .part[data-until],
+    .part[data-until].on {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .part,
+    .part.on,
+    .caption,
+    .caption.on {
+      transform: none;
+      transition: none;
+    }
+  }
+
+  /* ---------- The window: macOS chrome around a small invoice ---------- */
+
+  .window {
+    position: relative;
+    border-radius: 10px;
+    background: #fff;
+    color: #111;
+    font-size: 13px;
+    line-height: 1.4;
+    box-shadow:
+      0 0 0 1px #b4b4b4,
+      0 2px 4px rgb(0 0 0 / 0.06),
+      0 18px 40px -18px rgb(0 0 0 / 0.3);
+    /* A picture of an app: nothing in it responds */
+    cursor: default;
+    user-select: none;
+  }
+
+  /* The light inner edge, above the content */
+  .window::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.7);
+    pointer-events: none;
+  }
+
+  .bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    min-height: 30px;
+    padding: 0 12px;
+    border-radius: 10px 10px 0 0;
+    background: linear-gradient(#f6f6f6, #e4e4e4);
+    box-shadow: inset 0 -1px 0 rgb(0 0 0 / 0.14);
+  }
+
+  .lights {
+    display: flex;
+    gap: 6px;
+  }
+
+  .lights i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ff5f57;
+    box-shadow: inset 0 0 0 0.5px rgb(0 0 0 / 0.2);
+  }
+
+  .lights i:nth-child(2) {
+    background: #febc2e;
+  }
+
+  .lights i:nth-child(3) {
+    background: #28c840;
+  }
+
+  .title {
+    color: #5c5c5c;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .body {
+    display: grid;
+    gap: 12px;
+    padding: 14px 16px 12px;
+  }
+
+  .body p,
+  .body ul {
+    margin: 0;
+  }
+
+  .head,
+  .line,
+  .ghost,
+  .total {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .client {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .meta {
+    display: block;
+    color: #777;
+    font-weight: 400;
+  }
+
+  .tag {
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: #ececec;
+    color: #5c5c5c;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .tag.paid {
+    background: #111;
+    color: #fff;
+  }
+
+  .lines {
+    display: grid;
+    gap: 6px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .line {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Empty rows waiting for the work */
+  .ghost i {
+    width: 46%;
+    height: 8px;
+    border-radius: 4px;
+    background: #ececec;
+  }
+
+  .ghost i:last-child {
+    width: 14%;
+  }
+
+  .total {
+    padding-top: 10px;
+    border-top: 1px solid #e4e4e4;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .foot {
+    color: #777;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+</style>
+
+<script>
+  // The pinning is all CSS. This only reads how far the pin has travelled
+  // through its track and shows the parts of that beat.
+  for (const story of document.querySelectorAll<HTMLElement>("[data-story]")) {
+    const scroller = story.closest<HTMLElement>("[data-story-scroller]");
+    const track = story.querySelector<HTMLElement>(".track")!;
+    const pin = story.querySelector<HTMLElement>(".pin")!;
+    const parts = [...story.querySelectorAll<HTMLElement>("[data-from], [data-until]")];
+    const count = story.querySelectorAll(".caption").length;
+    let queued = false;
+
+    const update = () => {
+      queued = false;
+      // Every beat, the last one included, gets one step of scrolling.
+      const step = (track.offsetHeight - pin.offsetHeight) / count;
+      if (step <= 0) return; // not pinned: the CSS shows the last state
+
+      const viewTop = scroller?.getBoundingClientRect().top ?? 0;
+      const pinTop = parseFloat(getComputedStyle(pin).top) || 0;
+      const travelled = (viewTop + pinTop - track.getBoundingClientRect().top) / step;
+      const beat = Math.min(count - 1, Math.max(0, Math.floor(travelled)));
+
+      for (const part of parts) {
+        const from = Number(part.dataset.from ?? 0);
+        const until = Number(part.dataset.until ?? Infinity);
+        part.classList.toggle("on", beat >= from && beat < until);
+      }
+    };
+
+    const queue = () => {
+      if (!queued) {
+        queued = true;
+        requestAnimationFrame(update);
+      }
+    };
+
+    (scroller ?? window).addEventListener("scroll", queue, { passive: true });
+    window.addEventListener("resize", queue);
+    update();
+  }
+</script>
