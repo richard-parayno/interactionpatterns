@@ -1,9 +1,10 @@
 # Interaction Patterns
 
 A personal library of interaction design patterns worth reusing. Each pattern
-has a name, a screenshot, a live demo, sample code, and a copy-pastable prompt
-for AI coding agents. Built as a static site with [Astro](https://astro.build/)
-and deployed to Cloudflare Workers.
+page has a name, a live demo, sample code in React and Svelte, and a
+copy-pastable prompt for AI coding agents; a screenshot of each pattern is its
+thumbnail on the index. Built as a static site with
+[Astro](https://astro.build/) and deployed to Cloudflare Workers.
 
 ![A pattern page: view links and a copy-prompt link in the left rail; beside them a macOS-style window opening with the pattern name, its live demo, the summary, and the agent prompt in a copy block](docs/screenshot.png)
 
@@ -145,8 +146,25 @@ message naming the pattern. Patterns are listed newest `added` first.
 ## Deployment
 
 The site is deployed as a static-assets-only Cloudflare Worker named
-`interactionpatterns`, configured in `wrangler.jsonc`. To deploy with Workers
-Builds, connect this repository in the Cloudflare dashboard with:
+`interactionpatterns`, configured in `wrangler.jsonc`, on Richard's personal
+Cloudflare account. It is served at <https://interactionpatterns.parayno.dev>,
+a custom domain on the `parayno.dev` zone declared under `routes` in
+`wrangler.jsonc`; `wrangler deploy` creates its DNS record and certificate.
+`site` in `astro.config.mjs` and the sitemap URL in `public/robots.txt` use
+the same origin, so canonical links and `og:url` point there.
+
+Deploys are run by hand from a checkout of `main`:
+
+```sh
+bun run build && bunx wrangler deploy
+```
+
+with `CLOUDFLARE_API_TOKEN` set to a token for that account (and
+`CLOUDFLARE_ACCOUNT_ID` if the token can reach more than one account).
+Pushing to GitHub does not deploy.
+
+To deploy on every push instead, connect this repository to the Worker with
+Workers Builds in the Cloudflare dashboard, using these settings:
 
 | Setting | Value |
 | --- | --- |
@@ -154,11 +172,3 @@ Builds, connect this repository in the Cloudflare dashboard with:
 | Deploy command (`main`) | `npx wrangler deploy` |
 | Preview command (other branches) | `npx wrangler preview` |
 | Build cache | Enabled |
-
-It runs on Richard's personal Cloudflare account and is served at
-<https://interactionpatterns.parayno.dev>, a custom domain on the `parayno.dev`
-zone declared under `routes` in `wrangler.jsonc`; `wrangler deploy` creates
-its DNS record and certificate. `site` in `astro.config.mjs` and the sitemap
-URL in `public/robots.txt` use the same origin, so canonical links and
-`og:url` point there. To deploy by hand, run `bun run build && bunx wrangler
-deploy` with `CLOUDFLARE_API_TOKEN` set to a token for that account.
