@@ -1,8 +1,8 @@
 ---
 // The index as a drum, like a wheel of a phone's date picker. Pattern names
 // roll past a fixed centre line, settle on it one row at a time, and tick as
-// each one passes. The row on the line is selected: its screenshot and
-// summary show in the second column (above the drum on small screens), and
+// each one passes. The row on the line is selected: its screenshot, name and
+// summary ease into the second column (above the drum on small screens), and
 // pressing it opens the pattern; pressing another row turns the drum to it.
 // Without scripting this is a plain list of names and summaries.
 //
@@ -43,7 +43,10 @@ const { patterns } = Astro.props;
           )
         }
       </div>
-      <p class="reading quiet" data-reading></p>
+      <div class="reading" data-reading>
+        <p class="reading-name" data-reading-name></p>
+        <p class="quiet" data-reading-summary></p>
+      </div>
     </div>
   </div>
   <div class="drum">
@@ -153,8 +156,10 @@ const { patterns } = Astro.props;
 
   function createWheel(wheel: HTMLElement) {
     const scroller = wheel.querySelector("ul");
-    const reading = wheel.querySelector("[data-reading]");
-    if (!scroller || !reading) return;
+    const reading = wheel.querySelector<HTMLElement>("[data-reading]");
+    const readingName = wheel.querySelector("[data-reading-name]");
+    const readingSummary = wheel.querySelector("[data-reading-summary]");
+    if (!scroller || !reading || !readingName || !readingSummary) return;
 
     const rows = [...scroller.children] as HTMLElement[];
     const links = rows.map((row) => row.querySelector("a") as HTMLAnchorElement);
@@ -176,7 +181,16 @@ const { patterns } = Astro.props;
       selected = index;
       rows[index].setAttribute("data-selected", "");
       shots[index]?.setAttribute("data-selected", "");
-      reading!.textContent = rows[index].querySelector(".summary")?.textContent ?? "";
+      readingName!.textContent = rows[index].querySelector(".name")?.textContent ?? "";
+      readingSummary!.textContent = rows[index].querySelector(".summary")?.textContent ?? "";
+      // The new text eases up into place, like the screenshot above it. It
+      // moves with `translate`, which adds to the baseline `transform`.
+      if (!reducedMotion.matches) {
+        reading!.animate([{ opacity: 0, translate: "0 0.375rem" }, { opacity: 1, translate: "0 0" }], {
+          duration: 320,
+          easing: "cubic-bezier(0.2, 0.7, 0.2, 1)",
+        });
+      }
       if (!first) feedback();
     }
 
@@ -431,17 +445,45 @@ const { patterns } = Astro.props;
       height: clamp(6rem, 24svh, 12rem);
     }
 
+    /* The outgoing screenshot fades; the incoming one fades in as it rises
+       a little into place, on load as well as on every turn. */
     .shots :global(img) {
       position: absolute;
       bottom: 0;
       left: 0;
       width: auto;
       max-height: 100%;
+      opacity: 0;
+      translate: 0 0.5rem;
       visibility: hidden;
+      transition:
+        opacity 200ms ease,
+        translate 200ms ease,
+        visibility 0s 200ms;
     }
 
     .shots :global(img[data-selected]) {
+      opacity: 1;
+      translate: 0 0;
       visibility: visible;
+      transition:
+        opacity 320ms ease-out,
+        translate 420ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    }
+
+    @starting-style {
+      .shots :global(img[data-selected]) {
+        opacity: 0;
+        translate: 0 0.5rem;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .shots :global(img),
+      .shots :global(img[data-selected]) {
+        translate: none;
+        transition: none;
+      }
     }
 
     .display {
@@ -449,8 +491,9 @@ const { patterns } = Astro.props;
     }
 
     .reading {
-      /* Room for three lines, so the drum below does not move. */
-      min-height: calc(3em * var(--leading-small));
+      /* Room for the name and three lines of summary, so the drum below does
+         not move. */
+      min-height: calc(4em * var(--leading-small));
       margin-top: var(--space-2);
     }
   }
@@ -502,6 +545,18 @@ const { patterns } = Astro.props;
     .display {
       position: relative;
       grid-column: 2;
+    }
+
+    /* A thin rule down the middle of the gutter, between the drum and the
+       display. */
+    .display::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: calc(var(--gutter) / -2);
+      width: 1px;
+      background: color-mix(in srgb, var(--ink) 12%, transparent);
     }
 
     .shots {

@@ -45,7 +45,7 @@ const SiteName = isHome ? "h1" : "div";
     <link rel="preload" href={sansFont} as="font" type="font/woff2" crossorigin />
   </head>
   <body class:list={{ fit }}>
-    <header class="grid">
+    <header>
       <SiteName>
         <a href="/" aria-current={isHome ? "page" : undefined}>interactionpatterns</a>
       </SiteName>
@@ -70,8 +70,11 @@ const SiteName = isHome ? "h1" : "div";
 </html>
 
 <style>
+  /* The intro sits under the site name, in the same column. */
   header {
-    row-gap: var(--space-2);
+    display: grid;
+    justify-items: start;
+    row-gap: var(--space-1);
     margin-bottom: var(--section-gap);
   }
 
@@ -87,10 +90,6 @@ const SiteName = isHome ? "h1" : "div";
   }
 
   @media (min-width: 50rem) {
-    .intro {
-      grid-column: 2 / -1;
-    }
-
     .fit {
       --grid-columns: repeat(2, minmax(0, 1fr));
     }
