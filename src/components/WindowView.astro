@@ -19,7 +19,7 @@ interface Props {
 const { id, label, initial = false } = Astro.props;
 ---
 
-<section {id} data-view data-initial={initial || undefined} tabindex="0">
+<section {id} data-view data-initial={initial || undefined} tabindex="-1">
   <h2 class="visually-hidden">{label}</h2>
   <slot />
 </section>
@@ -39,9 +39,11 @@ const { id, label, initial = false } = Astro.props;
     visibility: visible;
   }
 
-  /* Inset, because the window's edge is in the way of an outer ring. */
+  /* No ring: a view is focused only by following its link, never by Tab, and
+     the view appearing is the sign. A ring here also boxed the whole window
+     whenever a page was opened at /#code. */
   section:focus-visible {
-    outline-offset: -4px;
+    outline: none;
   }
 
   @media (max-width: 49.99rem) {
