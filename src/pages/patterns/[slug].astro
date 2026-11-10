@@ -25,14 +25,13 @@ interface Props {
 }
 
 const { entry, prompt, Demo, code } = Astro.props.pattern;
-const { name, summary, screenshot, screenshotAlt } = entry.data;
+const { name, summary } = entry.data;
 
-// Each id is a view in the window and its address (#demo). The views switch
+// Each id is a view in the window and its address (#code). The views switch
 // through CSS :target, so no other element on the page may use these ids.
 const views = [
-  { id: "prompt", label: "Prompt" },
-  { id: "demo", label: "Live demo" },
-  { id: "code", label: "Code" },
+  { id: "description", label: "Description" },
+  { id: "code", label: "Code sample" },
 ];
 ---
 
@@ -43,14 +42,13 @@ const views = [
       <CopyButton target="prompt-text" />
     </Fragment>
     <Window title={name}>
-      <WindowView id="prompt" label="Prompt" initial>
-        <PatternHeader {name} {summary} {screenshot} {screenshotAlt} />
+      <WindowView id="description" label="Description" initial>
+        <PatternHeader {name} {summary}>
+          <Stage><Demo /></Stage>
+        </PatternHeader>
         <Prompt text={prompt} />
       </WindowView>
-      <WindowView id="demo" label="Live demo" flush>
-        <Stage><Demo /></Stage>
-      </WindowView>
-      <WindowView id="code" label="Code">
+      <WindowView id="code" label="Code sample">
         {code.map((file) => <Code {...file} />)}
       </WindowView>
     </Window>

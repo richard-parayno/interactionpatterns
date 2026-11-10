@@ -2,7 +2,6 @@
 name: Sticky stacking cards
 summary: Cards pin as you scroll, each one sliding over the last until only their title strips show, then the whole stack leaves together.
 screenshot: ./screenshot.png
-screenshotAlt: Four cards mid-scroll. The title strips of Pin and Offset are stacked at the top, the Release card is pinned below them, the Track card is sliding up over it, and a side index highlights "release".
 added: 2026-11-09
 ---
 

@@ -9,8 +9,8 @@
   color-scheme: light;
 
   /* Colour */
-  --ground: #ececec; /* the page */
-  --panel: #ffffff; /* the window and the live demo stage */
+  --ground: #ececec; /* the page, and the wells inside the window */
+  --panel: #ffffff; /* the window */
   --ink: #000000;
   --quiet: #5c5c5c; /* secondary text; 5.6:1 on ground */
 
@@ -18,11 +18,9 @@
   --font-sans: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-mono: "Ioskeley Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --text-small: 0.875rem; /* site text */
-  --text-medium: 1rem; /* reading text: the prompt */
   --text-large: clamp(1.375rem, 1rem + 1.25vw, 1.875rem);
   --text-code: 0.8125rem;
   --leading-small: 1.4;
-  --leading-medium: 1.5;
   --leading-large: 1.22;
   --tracking-large: -0.012em;
 
@@ -42,6 +40,7 @@
   --page-pad: clamp(1rem, 0.5rem + 2vw, 2rem);
   --gutter: var(--space-3);
   --measure: 40rem; /* widest a column of reading text gets */
+  --radius: 6px; /* wells inside the window: the demo stage, copy blocks */
   --section-gap: var(--space-8);
 }
 

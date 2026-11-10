@@ -5,7 +5,7 @@ has a name, a screenshot, a live demo, sample code, and a copy-pastable prompt
 for AI coding agents. Built as a static site with [Astro](https://astro.build/)
 and deployed to Cloudflare Workers.
 
-![A pattern page: view links and a copy-prompt link in the left rail; beside them a macOS-style window opening with the pattern name, its screenshot, the summary, and the agent prompt](docs/screenshot.png)
+![A pattern page: view links and a copy-prompt link in the left rail; beside them a macOS-style window opening with the pattern name, its live demo, the summary, and the agent prompt in a copy block](docs/screenshot.png)
 
 ## Stack
 
@@ -31,15 +31,15 @@ and deployed to Cloudflare Workers.
 │   │   ├── PageGrid.astro        # Rail and main column
 │   │   ├── PatternList.astro     # Index wheel picker; the centred pattern's screenshot and summary
 │   │   ├── SoundToggle.astro     # Turns the wheel's tick sound on or off
-│   │   ├── PatternHeader.astro   # Name, screenshot, and summary atop the prompt view
+│   │   ├── PatternHeader.astro   # Name, live demo, and summary atop the description view
 │   │   ├── Window.astro          # macOS-style window holding a pattern's views
-│   │   ├── WindowView.astro      # One view (prompt, demo, code), shown via #id
+│   │   ├── WindowView.astro      # One view (description, code), shown via #id
 │   │   ├── WindowNav.astro       # Text links that switch views
-│   │   ├── Prompt.astro          # The agent prompt, shown verbatim
+│   │   ├── Prompt.astro          # The agent prompt, shown verbatim in a copy block
+│   │   ├── CopyBlock.astro       # Grey well with a label and a copy icon
 │   │   ├── CopyButton.astro      # Copies an element's text to the clipboard
-│   │   ├── Stage.astro           # Frame for the live demo
-│   │   ├── Screenshot.astro
-│   │   └── Code.astro            # One sample file with its own copy button
+│   │   ├── Stage.astro           # Grey well the live demo runs in
+│   │   └── Code.astro            # One sample file in a copy block
 │   ├── content/
 │   │   └── patterns/<slug>/      # One folder per pattern (see below)
 │   ├── content.config.ts         # Pattern schema and loader
@@ -86,9 +86,9 @@ Create a folder under `src/content/patterns/`. The folder name becomes the URL:
 
 ```text
 src/content/patterns/sticky-stacking-cards/ -> /patterns/sticky-stacking-cards/
-├── index.md          # Name, summary, screenshot; the body is the agent prompt
+├── index.md          # Name, summary, index thumbnail; the body is the agent prompt
 ├── Demo.astro        # The live demo shown on the page
-└── screenshot.png    # Any image format Astro supports
+└── screenshot.png    # Index thumbnail; any image format Astro supports
 ```
 
 `index.md`:
@@ -98,7 +98,6 @@ src/content/patterns/sticky-stacking-cards/ -> /patterns/sticky-stacking-cards/
 name: Sticky stacking cards
 summary: One sentence shown on the index and in page metadata.
 screenshot: ./screenshot.png
-screenshotAlt: What the screenshot shows.
 added: 2026-11-09
 code:              # optional; defaults to [Demo.astro]
   - Demo.astro
@@ -110,11 +109,13 @@ the copy button copies exactly this text.
 ```
 
 - **Prompt**: the Markdown body of `index.md`, without the frontmatter.
-- **Live demo**: `Demo.astro` is rendered inside the page. Its `<style>` is
-  scoped by Astro and its `<script>` is bundled once, so write scripts that set
-  up every matching element (`querySelectorAll`). The demo frame uses
-  `contain: layout`, so fixed-position UI stays inside it, and resets font
-  size and casing, so a demo starts from 1rem and brings its own styles.
+- **Live demo**: `Demo.astro` is rendered in the description, between the
+  name and the summary. Its `<style>` is scoped by Astro and its `<script>` is
+  bundled once, so write scripts that set up every matching element
+  (`querySelectorAll`). The demo runs in a grey (`#ececec`) well at least
+  18rem tall (12rem on phones) that uses `contain: layout`, so fixed-position
+  UI stays inside it, and resets font size and casing, so a demo starts from
+  1rem and brings its own styles and surface.
 - **Name and summary**: write them in sentence case. The site lowercases its
   own text through the `--case` token in `src/styles/global.css`; prompts,
   code, demos, and file names keep their casing.
@@ -122,7 +123,9 @@ the copy button copies exactly this text.
   and highlighted by extension. Showing `Demo.astro` itself keeps the code and
   the demo in sync; add other files (`.html`, `.css`, `.ts`, `.tsx`, …) for
   framework-specific versions.
-- **Screenshot**: optimized at build time with `astro:assets`.
+- **Screenshot**: the thumbnail beside the pattern on the index wheel,
+  optimized at build time with `astro:assets`. Pattern pages show the live
+  demo instead.
 
 The schema is in `src/content.config.ts`; a missing field, a missing
 `Demo.astro`, or a `code` entry that does not exist fails the build with a

@@ -1,6 +1,6 @@
 ---
-// The surface a live demo runs on: a white panel, with the demo centred and
-// keeping its own casing. In a flush <WindowView> it fills the window.
+// The surface a live demo runs on: a grey well where a screenshot would
+// otherwise go, with the demo centred and keeping its own casing.
 ---
 
 <div class="stage">
@@ -13,10 +13,19 @@
     contain: layout;
     display: grid;
     place-items: center;
-    min-height: max(22rem, 100%);
+    min-height: 18rem;
     padding: var(--space-5) var(--space-3);
-    background: var(--panel);
+    border-radius: var(--radius);
+    background: var(--ground);
     font-size: 1rem;
     text-transform: none;
+  }
+
+  /* Shorter on a phone, so the summary and the prompt are not a screen away. */
+  @media (max-width: 49.99rem) {
+    .stage {
+      min-height: 12rem;
+      padding: var(--space-3) var(--space-2);
+    }
   }
 </style>

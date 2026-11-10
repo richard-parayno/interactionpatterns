@@ -1,10 +1,10 @@
 ---
-// One sample file: its name, a copy button, and the code set directly on the
-// surface behind it with no box. Highlighting is tonal: comments and punctuation are
-// quiet, everything else is ink.
+// One sample file in a <CopyBlock>, labelled with its file name. Highlighting
+// is tonal: comments and punctuation are quiet, everything else is ink. Long
+// lines scroll sideways inside the block.
 import { Code as Highlighted } from "astro:components";
 import type { ComponentProps } from "astro/types";
-import CopyButton from "./CopyButton.astro";
+import CopyBlock from "./CopyBlock.astro";
 
 interface Props {
   /** File name shown above the code. */
@@ -19,16 +19,14 @@ const { name, lang, code } = Astro.props;
 const id = Astro.props.id ?? `code-${name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
 ---
 
-<figure>
-  <figcaption>
-    <span class="name quiet">{name}</span>
-    <CopyButton target={id} label="Copy" />
-  </figcaption>
-  <Highlighted {id} {code} {lang} theme="css-variables" />
-</figure>
+<div class="file">
+  <CopyBlock label={name} target={id}>
+    <Highlighted {id} {code} {lang} theme="css-variables" />
+  </CopyBlock>
+</div>
 
 <style>
-  figure {
+  .file {
     --astro-code-foreground: var(--ink);
     --astro-code-background: transparent;
     --astro-code-token-constant: var(--ink);
@@ -42,24 +40,7 @@ const id = Astro.props.id ?? `code-${name.toLowerCase().replace(/[^a-z0-9]+/g, "
     --astro-code-token-punctuation: var(--quiet);
   }
 
-  figure + figure {
-    margin-top: var(--space-8);
-  }
-
-  figcaption {
-    display: flex;
-    gap: var(--space-3);
-    margin-bottom: var(--space-2);
-  }
-
-  /* File names are case-sensitive. */
-  .name {
-    text-transform: none;
-  }
-
-  figure :global(pre) {
-    font-size: var(--text-code);
-    line-height: 1.6;
-    tab-size: 2;
+  .file + .file {
+    margin-top: var(--space-3);
   }
 </style>

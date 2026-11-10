@@ -1,0 +1,50 @@
+---
+// Text meant to be copied and pasted: a grey well with a label in one top
+// corner and a copy icon in the other. The prompt and each code sample sit in
+// one, so anything in this shape can be copied whole.
+import CopyButton from "./CopyButton.astro";
+
+interface Props {
+  /** What the block holds: "prompt", or a file name. Shown as written. */
+  label: string;
+  /** id of the element inside the block whose text the icon copies. */
+  target: string;
+  /** Accessible name and tooltip of the icon. */
+  copyLabel?: string;
+}
+
+const { label, target, copyLabel = `Copy ${label}` } = Astro.props;
+---
+
+<figure>
+  <figcaption>
+    <span class="quiet">{label}</span>
+    <CopyButton icon {target} label={copyLabel} />
+  </figcaption>
+  <slot />
+</figure>
+
+<style>
+  figure {
+    padding: var(--space-1) var(--space-2) var(--space-2);
+    border-radius: var(--radius);
+    background: var(--ground);
+  }
+
+  /* The icon's target reaches into the corner; the glyph lines up with the
+     text's right edge. */
+  figcaption {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin: 0 -0.5rem var(--space-1) 0;
+    text-transform: none;
+  }
+
+  figure :global(pre) {
+    font-size: var(--text-code);
+    line-height: 1.6;
+    tab-size: 2;
+  }
+</style>

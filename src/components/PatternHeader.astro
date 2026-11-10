@@ -1,29 +1,26 @@
 ---
-// What opens a pattern inside its <Window>: the name, the screenshot, and
-// the summary under it. The prompt follows.
-import Screenshot from "./Screenshot.astro";
-
+// What opens a pattern inside its <Window>: the name, the live demo where a
+// screenshot would go, and the summary under it. The prompt follows.
+// Put the demo in the slot, inside a <Stage>.
 interface Props {
   name: string;
   summary: string;
-  screenshot: ImageMetadata;
-  screenshotAlt: string;
 }
 
-const { name, summary, screenshot, screenshotAlt } = Astro.props;
+const { name, summary } = Astro.props;
 ---
 
 <div class="header">
   <!-- The window's title bar is the heading; this repeats it for the eye. -->
   <p class="name" aria-hidden="true">{name}</p>
-  <Screenshot src={screenshot} alt={screenshotAlt} />
+  <slot />
   <p class="quiet">{summary}</p>
 </div>
 
 <style>
   .header {
     display: grid;
-    justify-items: start;
+    grid-template-columns: minmax(0, 1fr);
     row-gap: var(--space-2);
     max-width: var(--measure);
     margin-bottom: var(--space-5);

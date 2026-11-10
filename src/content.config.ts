@@ -18,7 +18,6 @@ const patterns = defineCollection({
       name: z.string(),
       summary: z.string(),
       screenshot: image(),
-      screenshotAlt: z.string(),
       // Files in the pattern folder shown as sample code, in order
       code: z.array(z.string()).default(["Demo.astro"]),
       added: z.coerce.date(),
