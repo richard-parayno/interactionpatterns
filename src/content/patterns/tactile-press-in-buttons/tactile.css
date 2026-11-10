@@ -1,0 +1,182 @@
+/*
+ * Tactile buttons and surfaces. The depth is drawn inside the shape: a soft
+ * top-to-bottom gradient, a 1px highlight under the top edge and a very small
+ * shadow. No border. A button lifts 2px on hover with a slight overshoot,
+ * sinks 1px on press, and the current nav item stays pressed.
+ *
+ * A variant is six values. Set --tactile-fill and --tactile-label for your
+ * colours; lower the other four if the result looks glossy.
+ */
+.tactile {
+  --tactile-fill: #2b2b2b; /* the face, as it is at the bottom edge */
+  --tactile-label: #fff;
+  --tactile-sheen: 0.14; /* how much lighter the top of the face is */
+  --tactile-edge: 0.22; /* the 1px highlight under the top edge */
+  --tactile-drop: 0.24; /* the shadow underneath */
+  --tactile-sink: 0.45; /* the inner shadow while pressed */
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  box-sizing: border-box;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 6px;
+  /* The fill is a colour and the gradient a see-through layer over it,
+     because a colour can transition and a gradient cannot. */
+  background-color: var(--tactile-fill);
+  background-image: linear-gradient(
+    rgb(255 255 255 / var(--tactile-sheen)),
+    rgb(255 255 255 / 0)
+  );
+  /* Highlight, inner shadow (off), drop shadow. Every state lists the same
+     three layers in the same order, so each one fades into the next. */
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / var(--tactile-edge)),
+    inset 0 1px 2px rgb(0 0 0 / 0),
+    0 1px 2px rgb(0 0 0 / var(--tactile-drop));
+  color: var(--tactile-label);
+  font: inherit;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 150ms ease,
+    box-shadow 200ms ease,
+    /* The 1.56 carries the lift about 10% past 2px before it settles. */
+    transform 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* The light version, for secondary buttons and nav items. */
+.tactile-quiet {
+  --tactile-fill: #f1f1f1;
+  --tactile-label: #111;
+  --tactile-sheen: 1;
+  --tactile-edge: 0.9;
+  --tactile-drop: 0.16;
+  --tactile-sink: 0.16;
+}
+
+.tactile-small {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 0.875rem;
+}
+
+/* Lift. Only where there is a pointer that hovers: on a touch screen :hover
+   sticks after a tap and the button would stay up. */
+@media (hover: hover) {
+  .tactile:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / var(--tactile-edge)),
+      inset 0 1px 2px rgb(0 0 0 / 0),
+      0 5px 10px -2px rgb(0 0 0 / var(--tactile-drop));
+  }
+
+  /* While lifted, the button still takes the pointer where it rested (and a
+     pixel more, for the overshoot). Without this, a pointer on its bottom
+     edge makes it flicker: it lifts away, loses hover, and drops back. */
+  .tactile:hover::after {
+    content: "";
+    position: absolute;
+    inset: 0 0 -3px;
+  }
+}
+
+/* Press: down fast, flat face, and the highlight gives way to an inner
+   shadow. The current nav item keeps this look. */
+.tactile:active,
+.tactile[aria-current]:not([aria-current="false"]) {
+  background-color: color-mix(in srgb, var(--tactile-fill), #000 9%);
+  background-image: none;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0),
+    inset 0 1px 2px rgb(0 0 0 / var(--tactile-sink)),
+    0 0 0 rgb(0 0 0 / 0);
+}
+
+.tactile:active {
+  transform: translateY(1px);
+  transition-duration: 80ms;
+}
+
+/* The same idea as the hover rule: a press on the top edge still releases
+   on the button, so the click is not lost. */
+.tactile:active::after {
+  content: "";
+  position: absolute;
+  inset: -1px 0 0;
+}
+
+/* The current item is already down: it does not lift or sink. */
+.tactile[aria-current]:not([aria-current="false"]) {
+  transform: none;
+  cursor: default;
+}
+
+.tactile:disabled,
+.tactile[aria-disabled="true"] {
+  background-image: none;
+  box-shadow: none;
+  opacity: 0.5;
+  transform: none;
+  cursor: not-allowed;
+}
+
+.tactile:focus-visible {
+  outline: 2px solid #111;
+  outline-offset: 3px;
+}
+
+/* Reduced motion: the shading still changes, the button does not move. */
+@media (prefers-reduced-motion: reduce) {
+  .tactile,
+  .tactile:hover,
+  .tactile:active {
+    transform: none;
+  }
+}
+
+/* High-contrast modes remove shadows and gradients, so draw the edges and
+   mark the current item with the system's selection colours. */
+@media (forced-colors: active) {
+  .tactile {
+    border: 1px solid ButtonText;
+  }
+
+  .tactile[aria-current]:not([aria-current="false"]) {
+    border-color: Highlight;
+    background-color: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+}
+
+/* A raised pane with the same texture. It never moves. */
+.tactile-surface {
+  border-radius: 8px;
+  background: linear-gradient(#fdfdfd, #f4f4f4);
+  box-shadow:
+    inset 0 1px 0 #fff,
+    0 1px 2px rgb(0 0 0 / 0.1),
+    0 2px 6px rgb(0 0 0 / 0.06);
+}
+
+/* A row of nav items. Room around them, so a lifted item never touches its
+   neighbours or the edge of the pane. */
+.tactile-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}

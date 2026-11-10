@@ -1,0 +1,112 @@
+---
+// Tactile surfaces and press-in buttons: a raised pane whose nav items and
+// buttons carry their depth on the inside, lift on hover and press in.
+//
+// All of the look and motion is in tactile.css, the stylesheet the React and
+// Svelte samples use. The styles below only lay out this demo.
+import "./tactile.css";
+
+const views = [
+  {
+    label: "Texture",
+    text: "The depth is inside the shape: a soft top-to-bottom gradient, a one-pixel highlight under the top edge and a very small shadow. No border.",
+  },
+  {
+    label: "Lift",
+    text: "On hover a button rises two pixels and overshoots a little before it settles. Its shadow lengthens with it.",
+  },
+  {
+    label: "Press",
+    text: "On press it sinks a pixel and the highlight gives way to an inner shadow. The nav item you are on stays pressed, like this one.",
+  },
+];
+---
+
+<section class="pane tactile-surface" data-tactile-demo>
+  <nav class="tactile-nav" aria-label="Parts of the pattern">
+    <ul>
+      {
+        views.map((view, i) => (
+          <li>
+            {/* In a real nav these are links and the current one has aria-current="page". */}
+            <button
+              type="button"
+              class="tactile tactile-quiet tactile-small"
+              aria-current={i === 0 ? "true" : undefined}
+              data-tactile-view={i}
+            >
+              {view.label}
+            </button>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+
+  <div class="views" aria-live="polite">
+    {views.map((view, i) => <p class:list={{ on: i === 0 }}>{view.text}</p>)}
+  </div>
+
+  <div class="actions">
+    <button type="button" class="tactile">Press me</button>
+    <button type="button" class="tactile tactile-quiet">Quiet version</button>
+  </div>
+</section>
+
+<style>
+  .pane {
+    display: grid;
+    gap: 1.25rem;
+    width: 100%;
+    max-width: 26rem;
+    padding: 0.75rem;
+    color: #111;
+    line-height: 1.45;
+  }
+
+  /* Every text shares one cell, so the pane is as tall as the longest and
+     does not jump when the view changes. */
+  .views {
+    display: grid;
+    padding-inline: 0.5rem;
+  }
+
+  .views p {
+    grid-area: 1 / 1;
+    margin: 0;
+    visibility: hidden;
+  }
+
+  .views p.on {
+    visibility: visible;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+</style>
+
+<script>
+  // Pressing a nav item makes it the current one and shows its text. The
+  // pressed look comes from aria-current alone.
+  for (const pane of document.querySelectorAll<HTMLElement>("[data-tactile-demo]")) {
+    const items = [...pane.querySelectorAll<HTMLButtonElement>("[data-tactile-view]")];
+    const texts = [...pane.querySelectorAll<HTMLElement>(".views p")];
+
+    for (const item of items) {
+      item.addEventListener("click", () => {
+        items.forEach((other) => {
+          if (other === item) other.setAttribute("aria-current", "true");
+          else other.removeAttribute("aria-current");
+        });
+        texts.forEach((text, i) => text.classList.toggle("on", i === Number(item.dataset.tactileView)));
+      });
+    }
+  }
+
+  // Safari on iOS shows :active only while the page has a touchstart
+  // listener; this empty one is enough for the press to show on a tap.
+  document.addEventListener("touchstart", () => {}, { passive: true });
+</script>
