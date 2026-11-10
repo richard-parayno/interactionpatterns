@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://interactionpatterns.mgrp.workers.dev/sitemap-index.xml
+Sitemap: https://interactionpatterns.parayno.dev/sitemap-index.xml

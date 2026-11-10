@@ -155,7 +155,10 @@ Builds, connect this repository in the Cloudflare dashboard with:
 | Preview command (other branches) | `npx wrangler preview` |
 | Build cache | Enabled |
 
-Until the site has its own domain, `site` in `astro.config.mjs` and the sitemap
-URL in `public/robots.txt` point at
-`https://interactionpatterns.mgrp.workers.dev`; update both when a custom
-domain is attached.
+It runs on Richard's personal Cloudflare account and is served at
+<https://interactionpatterns.parayno.dev>, a custom domain on the `parayno.dev`
+zone declared under `routes` in `wrangler.jsonc`; `wrangler deploy` creates
+its DNS record and certificate. `site` in `astro.config.mjs` and the sitemap
+URL in `public/robots.txt` use the same origin, so canonical links and
+`og:url` point there. To deploy by hand, run `bun run build && bunx wrangler
+deploy` with `CLOUDFLARE_API_TOKEN` set to a token for that account.

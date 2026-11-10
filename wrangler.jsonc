@@ -7,6 +7,8 @@
     "directory": "./dist",
     "not_found_handling": "404-page"
   },
+  // Served at this hostname on the parayno.dev zone; deploy creates its DNS record and certificate
+  "routes": [{ "pattern": "interactionpatterns.parayno.dev", "custom_domain": true }],
   // Previews need no settings of their own while the site is static
   "previews": {}
 }
