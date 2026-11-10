@@ -1,0 +1,122 @@
+---
+// Rotating headline phrase: the heading's closing phrase changes every few
+// seconds. Each word of the new phrase fades up out of a blur, one after
+// another, while the old phrase keeps rising as it fades.
+//
+// The demo runs on the sample stylesheet itself; the styles below only set
+// the heading it sits in.
+import "./rotating-phrase.css";
+
+// The first phrase is the accessible text, and what shows with reduced
+// motion or without JavaScript. All four fit on one line of a phone, so the
+// shared cell holds no spare line under the short ones.
+const phrases = ["a live example.", "code you can copy.", "a prompt for your agent.", "a name to ask for it by."];
+---
+
+<div class="frame">
+  <p class="headline">
+    <span class="line">Interaction patterns I reuse,</span>
+    <span class="line">each one with</span>
+    <span class="rotating" data-rotating>
+      <span class="rotating-label">{phrases[0]}</span>
+      {
+        phrases.map((phrase, i) => (
+          <span class:list={["rotating-phrase", { "is-on": i === 0 }]} aria-hidden="true">
+            {phrase.split(" ").map((word, j) => (
+              <>
+                <span class="rotating-word" style={`--i:${j}`}>
+                  {word}
+                </span>{" "}
+              </>
+            ))}
+          </span>
+        ))
+      }
+    </span>
+  </p>
+</div>
+
+<style>
+  .frame {
+    /* Demo only: the heading sizes itself to the well it is shown in. */
+    container-type: inline-size;
+    display: grid;
+    place-items: center;
+    width: 100%;
+  }
+
+  .headline {
+    /* As wide as its longest line or phrase, so it does not move when the
+       phrase changes. */
+    width: fit-content;
+    max-width: 100%;
+    margin: 0;
+    font-size: clamp(1.5rem, 6.4cqi, 2.25rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    /* The fixed words step back; the phrase that changes carries the ink. */
+    color: #5c5c5c;
+  }
+
+  .line {
+    display: block;
+    text-wrap: balance;
+  }
+
+  .rotating {
+    color: #000;
+  }
+</style>
+
+<script>
+  // The motion is all CSS. This only moves `is-on` to the next phrase, while
+  // the heading is on screen, the tab is visible and motion is welcome.
+  const HOLD_MS = 3100; // from one change to the next
+  const LEAVE_MS = 700; // the 0.4s leave plus the last word's stagger, with headroom
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+  for (const root of document.querySelectorAll<HTMLElement>("[data-rotating]")) {
+    const phrases = [...root.querySelectorAll<HTMLElement>(".rotating-phrase")];
+    if (phrases.length < 2) continue;
+
+    let index = 0;
+    let timer = 0;
+    let inView = true;
+
+    const step = () => {
+      const out = phrases[index];
+      index = (index + 1) % phrases.length;
+      out.classList.replace("is-on", "is-out");
+      phrases[index].classList.remove("is-out");
+      phrases[index].classList.add("is-on");
+      // Once the old phrase has faded, let it drop back below the line.
+      window.setTimeout(() => out.classList.remove("is-out"), LEAVE_MS);
+    };
+
+    // With reduced motion, rest on the first phrase.
+    const rest = () => {
+      index = 0;
+      phrases.forEach((phrase, i) => {
+        phrase.classList.remove("is-out");
+        phrase.classList.toggle("is-on", i === 0);
+      });
+    };
+
+    const sync = () => {
+      const run = inView && !document.hidden && !reduced.matches;
+      if (run && !timer) timer = window.setInterval(step, HOLD_MS);
+      if (!run && timer) {
+        window.clearInterval(timer);
+        timer = 0;
+      }
+      if (reduced.matches) rest();
+    };
+
+    new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+      sync();
+    }).observe(root);
+    document.addEventListener("visibilitychange", sync);
+    reduced.addEventListener("change", sync);
+  }
+</script>

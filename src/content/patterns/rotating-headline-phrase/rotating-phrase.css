@@ -1,0 +1,71 @@
+/*
+ * Rotating headline phrase. Every phrase sits in the same grid cell, so the
+ * heading is always as tall as the tallest phrase and nothing below it moves
+ * when the phrase changes. Each word waits its turn (--i) and then fades up
+ * out of a blur; the phrase it replaces keeps rising as it fades.
+ *
+ * The colour is yours: the phrase inherits the heading's. Set it apart with
+ * tone, such as a quieter heading and the phrase in the main text colour.
+ */
+.rotating {
+  --enter: 0.6s;
+  --leave: 0.4s;
+  --stagger: 45ms;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+
+  /* Block-level, so the phrase starts on its own line. */
+  display: grid;
+}
+
+/* The first phrase, for assistive technology; the phrases you see are
+   aria-hidden. Absolute, so it takes no grid cell. */
+.rotating-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.rotating-phrase {
+  grid-area: 1 / 1;
+  text-wrap: balance;
+}
+
+/* A hidden word rests below the line, blurred and transparent. */
+.rotating-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.35em);
+  filter: blur(6px);
+  transition:
+    opacity var(--enter) var(--ease),
+    transform var(--enter) var(--ease),
+    filter var(--enter) var(--ease);
+  transition-delay: calc(var(--i) * var(--stagger));
+}
+
+.rotating-phrase.is-on .rotating-word {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+/* Leaving: keep rising instead of dropping back, a little faster than entering. */
+.rotating-phrase.is-out .rotating-word {
+  transform: translateY(-0.3em);
+  transition-duration: var(--leave);
+}
+
+/* No rotation: only the phrase that is on exists, so no space is held for
+   the others and nothing animates. */
+@media (prefers-reduced-motion: reduce), (scripting: none) {
+  .rotating-phrase:not(.is-on) {
+    display: none;
+  }
+
+  .rotating-word {
+    transition: none;
+  }
+}
