@@ -1,0 +1,133 @@
+/*
+ * Faux product window: a product mock framed as a real macOS window. Only
+ * the chrome is macOS; the mock inside keeps the product's own colours.
+ *
+ * The window has two borders, as macOS draws them: an opaque rim just outside
+ * its edge and a light edge just inside, above the content. Chrome and
+ * content scale down together when the window has little room.
+ */
+
+/* Measures the room the window has. It draws nothing itself. A container
+   has no width of its own, so give it one (width: 100%) wherever its parent
+   centres or shrink-wraps it. */
+.mac-window {
+  container: mac-window / inline-size;
+}
+
+.mac-window-frame {
+  --mac-scale: 1;
+  /* One pixel on screen at any scale, so the borders never thin out */
+  --mac-hairline: calc(1px / var(--mac-scale));
+  /* Opaque, so the rim reads the same on a light or a dark page */
+  --mac-rim: #b4b4b4;
+  --mac-edge: rgb(255 255 255 / 0.7);
+  --mac-bar: linear-gradient(#f6f6f6, #e4e4e4);
+  --mac-bar-line: rgb(0 0 0 / 0.14);
+  --mac-title: #4a4a4a;
+  --mac-shade: rgb(0 0 0 / 0.3);
+
+  position: relative;
+  isolation: isolate;
+  /* Scales layout as well as paint, so the window keeps filling its column */
+  zoom: var(--mac-scale);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow:
+    0 0 0 var(--mac-hairline) var(--mac-rim),
+    0 2px 4px rgb(0 0 0 / 0.06),
+    0 24px 56px -20px var(--mac-shade);
+  /* The system face at its macOS size, never the page's own fonts */
+  font: 13px / 1.4 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", system-ui, sans-serif;
+  letter-spacing: normal;
+  text-align: left;
+  text-transform: none;
+  /* A picture of an app, not an app */
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.mac-window-frame[data-appearance="dark"] {
+  --mac-rim: #0b0b0c;
+  --mac-edge: rgb(255 255 255 / 0.13);
+  --mac-bar: linear-gradient(#3c3c3e, #303032);
+  --mac-bar-line: rgb(0 0 0 / 0.5);
+  --mac-title: #b9b9bd;
+  --mac-shade: rgb(0 0 0 / 0.5);
+
+  background: #1e1e1e;
+}
+
+/* The inner edge sits above the content, so a mock cannot paint over it. */
+.mac-window-frame::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 var(--mac-hairline) var(--mac-edge);
+  pointer-events: none;
+}
+
+.mac-bar {
+  display: grid;
+  /* Equal side columns keep the title centred on the window, not on the
+     space left beside the lights */
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  column-gap: 14px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 12px 12px 0 0;
+  background: var(--mac-bar);
+  box-shadow: inset 0 calc(var(--mac-hairline) * -1) 0 var(--mac-bar-line);
+}
+
+.mac-lights {
+  display: flex;
+  gap: 8px;
+}
+
+/* Close, minimise, zoom: 12px discs, each with a ring one shade darker. */
+.mac-lights i {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff5f57;
+  box-shadow: inset 0 0 0 0.5px #e0443e;
+}
+
+.mac-lights i:nth-child(2) {
+  background: #febc2e;
+  box-shadow: inset 0 0 0 0.5px #dea123;
+}
+
+.mac-lights i:nth-child(3) {
+  background: #28c840;
+  box-shadow: inset 0 0 0 0.5px #1aab29;
+}
+
+.mac-title {
+  overflow: hidden;
+  color: var(--mac-title);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The mock goes here and paints its own background. */
+.mac-body {
+  position: relative;
+  /* Keeps the mock's own layers below the inner edge */
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 0 0 12px 12px;
+}
+
+/* On a phone the whole window shrinks, like a screenshot would, so labels
+   keep to one line. A mock can use the same query to drop a secondary pane. */
+@container mac-window (max-width: 560px) {
+  .mac-window-frame {
+    --mac-scale: 0.82;
+  }
+}
