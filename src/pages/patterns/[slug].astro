@@ -1,5 +1,5 @@
 ---
-import Code from "../../components/Code.astro";
+import CodeTabs from "../../components/CodeTabs.astro";
 import CopyButton from "../../components/CopyButton.astro";
 import PageGrid from "../../components/PageGrid.astro";
 import PatternHeader from "../../components/PatternHeader.astro";
@@ -49,7 +49,7 @@ const views = [
         <Prompt text={prompt} />
       </WindowView>
       <WindowView id="code" label="Code sample">
-        {code.map((file) => <Code {...file} />)}
+        <CodeTabs files={code} />
       </WindowView>
     </Window>
   </PageGrid>

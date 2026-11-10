@@ -18,8 +18,17 @@ const patterns = defineCollection({
       name: z.string(),
       summary: z.string(),
       screenshot: image(),
-      // Files in the pattern folder shown as sample code, in order
-      code: z.array(z.string()).default(["Demo.astro"]),
+      // Files in the pattern folder shown as sample code, in order. A file
+      // with a `framework` shows under that tab ("React", "Svelte"); a bare
+      // file name shows under every tab.
+      code: z
+        .array(
+          z.union([
+            z.string().transform((file) => ({ file, framework: undefined })),
+            z.object({ file: z.string(), framework: z.string().optional() }),
+          ]),
+        )
+        .default([{ file: "Demo.astro", framework: undefined }]),
       added: z.coerce.date(),
     }),
 });

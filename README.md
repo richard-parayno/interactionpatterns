@@ -39,6 +39,7 @@ and deployed to Cloudflare Workers.
 │   │   ├── CopyBlock.astro       # Grey well with a label and a copy icon
 │   │   ├── CopyButton.astro      # Copies an element's text to the clipboard
 │   │   ├── Stage.astro           # Grey well the live demo runs in
+│   │   ├── CodeTabs.astro        # A tab per framework over the sample files
 │   │   └── Code.astro            # One sample file in a copy block
 │   ├── content/
 │   │   └── patterns/<slug>/      # One folder per pattern (see below)
@@ -100,8 +101,11 @@ summary: One sentence shown on the index and in page metadata.
 screenshot: ./screenshot.png
 added: 2026-11-09
 code:              # optional; defaults to [Demo.astro]
-  - Demo.astro
-  - stack.css
+  - file: StackingCards.tsx
+    framework: React
+  - file: StackingCards.svelte
+    framework: Svelte
+  - stacking-cards.css   # no framework: shown under every tab
 ---
 
 The agent prompt, written in Markdown. It is shown verbatim on the page and
@@ -120,9 +124,16 @@ the copy button copies exactly this text.
   own text through the `--case` token in `src/styles/global.css`; prompts,
   code, demos, and file names keep their casing.
 - **Sample code**: the files listed in `code`, read from the pattern folder
-  and highlighted by extension. Showing `Demo.astro` itself keeps the code and
-  the demo in sync; add other files (`.html`, `.css`, `.ts`, `.tsx`, …) for
-  framework-specific versions.
+  and highlighted by extension. A file with a `framework` shows under that
+  tab; a bare file name (a shared stylesheet) shows under every tab. Each
+  pattern should have a React and a Svelte version. With fewer than two
+  frameworks there are no tabs. The reader's tab choice is remembered across
+  patterns.
+- **Checking samples**: the site shows `.tsx` and `.svelte` files as text and
+  does not build them, so `tsconfig.json` leaves them out and `astro check`
+  only prints a notice about `@astrojs/svelte`. Type-check and run a new
+  sample in a scratch Vite app (`tsc` for React, `svelte-check` for Svelte)
+  before adding it.
 - **Screenshot**: the thumbnail beside the pattern on the index wheel,
   optimized at build time with `astro:assets`. Pattern pages show the live
   demo instead.

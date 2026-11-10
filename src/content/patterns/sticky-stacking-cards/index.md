@@ -3,6 +3,12 @@ name: Sticky stacking cards
 summary: Cards pin as you scroll, each one sliding over the last until only their title strips show, then the whole stack leaves together.
 screenshot: ./screenshot.png
 added: 2026-11-09
+code:
+  - file: StackingCards.tsx
+    framework: React
+  - file: StackingCards.svelte
+    framework: Svelte
+  - stacking-cards.css
 ---
 
 Turn this list of sections into sticky stacking cards: as the reader scrolls, each card pins near the top of the window, the next card slides over it, and earlier cards stay visible as a pile of title strips. When the list ends, the whole stack scrolls away together.

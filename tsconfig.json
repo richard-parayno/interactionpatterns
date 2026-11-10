@@ -1,5 +1,7 @@
 {
   "extends": "astro/tsconfigs/strict",
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"]
+  // Framework samples in a pattern folder are shown as code, not built here,
+  // so their React types are not installed; check them in a scratch app
+  "exclude": ["dist", "src/content/patterns/**/*.tsx", "src/content/patterns/**/*.jsx"]
 }

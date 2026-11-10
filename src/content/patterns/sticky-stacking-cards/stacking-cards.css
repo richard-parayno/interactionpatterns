@@ -1,0 +1,110 @@
+/*
+ * Sticky stacking cards. Each card is position: sticky and pins one title
+ * strip lower than the one before, so earlier cards stay as a pile of titles.
+ * Bottom margins step down one strip per card, so every card lets go at the
+ * same scroll position and the stack leaves as one.
+ *
+ * Set --header-h to your sticky header's height, and --card-h so every card
+ * is the same height: cards of different heights release at different times.
+ */
+.stack {
+  --strip: 52px;
+  --pin: calc(var(--header-h, 0px) + 8px);
+  --gap: 24px;
+}
+
+@media (min-width: 760px) {
+  .stack {
+    --strip: 64px;
+    --pin: calc(var(--header-h, 0px) + 16px);
+  }
+}
+
+.stack-index {
+  display: none;
+}
+
+/* Normal block flow, not flex or grid: the layout relies on margin
+   collapsing. flow-root keeps the last card's margin inside the list. */
+.stack-cards {
+  display: flow-root;
+}
+
+.stack-card {
+  box-sizing: border-box;
+  height: var(--card-h, 420px);
+  padding: 0 20px 20px;
+  /* Opaque, so a card hides the one it slides over */
+  background: #fff;
+}
+
+.stack-card + .stack-card {
+  margin-top: var(--gap);
+}
+
+.stack-strip {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: var(--strip);
+}
+
+.stack-strip h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.stack-num {
+  color: #888;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Pin only when a whole card fits under the stack. */
+@media (min-height: 700px) {
+  .stack-card {
+    position: sticky;
+    top: calc(var(--pin) + var(--i) * var(--strip));
+    margin-bottom: calc((var(--n) - var(--i)) * var(--strip));
+    box-shadow: 0 -10px 16px -12px rgb(0 0 0 / 0.3);
+  }
+
+  /* Collapses with the previous card's bottom margin; the gap stays --gap. */
+  .stack-card + .stack-card {
+    margin-top: calc(var(--gap) - (var(--n) + 1 - var(--i)) * var(--strip));
+  }
+}
+
+/* A side index that lights the card being read, when there is room. */
+@media (min-width: 1000px) {
+  .stack {
+    display: grid;
+    grid-template-columns: 176px minmax(0, 1fr);
+    align-items: start;
+    gap: 32px;
+  }
+
+  .stack-index {
+    position: sticky;
+    top: calc(var(--pin) + 22px);
+    display: grid;
+    gap: 14px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: #aaa;
+  }
+
+  .stack-index li {
+    transition: color 200ms ease;
+  }
+
+  .stack-index li.on {
+    color: #111;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stack-index li {
+    transition: none;
+  }
+}

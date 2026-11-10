@@ -1,9 +1,11 @@
 ---
 // The surface a live demo runs on: a grey well where a screenshot would
-// otherwise go, with the demo centred and keeping its own casing.
+// otherwise go, with the demo centred and keeping its own casing. A faint
+// "demo" sits in its top left corner, where a <CopyBlock> has its label.
 ---
 
 <div class="stage">
+  <p class="label faint">demo</p>
   <slot />
 </div>
 
@@ -21,11 +23,24 @@
     text-transform: none;
   }
 
+  /* In the stage's top padding, on the same line as a <CopyBlock>'s label.
+     The stage's containment makes it the box this is placed against. */
+  .label {
+    position: absolute;
+    top: var(--space-1);
+    left: var(--space-2);
+    font-size: var(--text-small);
+    line-height: 2rem;
+    pointer-events: none;
+    user-select: none;
+  }
+
   /* Shorter on a phone, so the summary and the prompt are not a screen away. */
   @media (max-width: 49.99rem) {
     .stage {
       min-height: 12rem;
-      padding: var(--space-3) var(--space-2);
+      /* The top keeps room for the label. */
+      padding: var(--space-5) var(--space-2);
     }
   }
 </style>

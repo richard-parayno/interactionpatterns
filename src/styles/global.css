@@ -13,6 +13,7 @@
   --panel: #ffffff; /* the window */
   --ink: #000000;
   --quiet: #5c5c5c; /* secondary text; 5.6:1 on ground */
+  --faint: #858585; /* corner labels on the wells; 3.1:1 on ground, so never for reading text */
 
   /* Type */
   --font-sans: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -157,6 +158,10 @@ samp {
 
 .quiet {
   color: var(--quiet);
+}
+
+.faint {
+  color: var(--faint);
 }
 
 .visually-hidden {

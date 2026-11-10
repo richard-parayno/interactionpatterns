@@ -1,6 +1,6 @@
 ---
-// Text meant to be copied and pasted: a grey well with a label in one top
-// corner and a copy icon in the other. The prompt and each code sample sit in
+// Text meant to be copied and pasted: a grey well with a faint label in one
+// top corner and a copy icon in the other. The prompt and each code sample sit in
 // one, so anything in this shape can be copied whole.
 import CopyButton from "./CopyButton.astro";
 
@@ -18,7 +18,7 @@ const { label, target, copyLabel = `Copy ${label}` } = Astro.props;
 
 <figure>
   <figcaption>
-    <span class="quiet">{label}</span>
+    <span class="faint">{label}</span>
     <CopyButton icon {target} label={copyLabel} />
   </figcaption>
   <slot />

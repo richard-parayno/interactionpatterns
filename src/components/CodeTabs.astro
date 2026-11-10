@@ -1,0 +1,113 @@
+---
+// The code samples of a pattern, with a tab per framework when there is more
+// than one. A file that names a `framework` shows under that tab only; a file
+// that names none (a shared stylesheet) shows under every tab. With fewer
+// than two frameworks there are no tabs, only the files.
+//
+// The tabs are radio buttons and the switching is CSS, so they work with the
+// arrow keys and without scripting. The script only remembers the choice, so
+// picking Svelte once shows Svelte on every pattern.
+import type { ComponentProps } from "astro/types";
+import Code from "./Code.astro";
+
+interface Props {
+  /** In the order they should show. */
+  files: (Pick<ComponentProps<typeof Code>, "name" | "lang" | "code"> & {
+    /** Tab label: "React", "Svelte". Shown in lowercase, like the rest of the site's text. */
+    framework?: string;
+  })[];
+  /** Prefix for the ids inside. Change it if a page has two of these. */
+  id?: string;
+}
+
+const { files, id = "samples" } = Astro.props;
+
+const slug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+const frameworks = [...new Set(files.flatMap(({ framework }) => (framework ? [framework] : [])))];
+const tabs = frameworks.map((framework) => ({
+  framework,
+  key: slug(framework),
+  files: files.filter((file) => !file.framework || file.framework === framework),
+}));
+
+// One rule per tab: its panel shows while its radio is checked.
+const showChecked = tabs
+  .map(({ key }) => `#${id}:has(input[value="${key}"]:checked) [data-framework="${key}"]{display:block}`)
+  .join("");
+---
+
+{
+  tabs.length < 2 ? (
+    files.map(({ name, lang, code }) => <Code {name} {lang} {code} />)
+  ) : (
+    <div {id}>
+      <fieldset>
+        <legend class="visually-hidden">Framework</legend>
+        {tabs.map(({ framework, key }, index) => (
+          <label>
+            <input class="visually-hidden" type="radio" name={`${id}-framework`} value={key} checked={index === 0} />
+            <span>{framework}</span>
+          </label>
+        ))}
+      </fieldset>
+      {/* Runs in place, before the panels are drawn, so a remembered choice does not flash. */}
+      <script is:inline define:vars={{ id }}>
+        const KEY = "interactionpatterns:framework";
+        const radios = document.querySelectorAll(`#${id} input[type="radio"]`);
+        try {
+          const saved = localStorage.getItem(KEY);
+          for (const radio of radios) if (radio.value === saved) radio.checked = true;
+        } catch {}
+        for (const radio of radios) {
+          radio.addEventListener("change", () => {
+            try {
+              localStorage.setItem(KEY, radio.value);
+            } catch {}
+          });
+        }
+      </script>
+      {tabs.map(({ key, files }) => (
+        <div class="panel" data-framework={key}>
+          {files.map(({ name, lang, code }) => (
+            <Code {name} {lang} {code} id={`${id}-${key}-${slug(name)}`} />
+          ))}
+        </div>
+      ))}
+      <style is:inline set:html={showChecked} />
+    </div>
+  )
+}
+
+<style>
+  fieldset {
+    display: flex;
+    gap: var(--space-2);
+    min-width: 0;
+    margin: calc(var(--space-1) * -1) 0 var(--space-1);
+    padding: 0;
+    border: 0;
+  }
+
+  /* Text tabs, like the links in the rail: grey, and black when current. */
+  label {
+    position: relative;
+    padding: var(--space-1) 0;
+    color: var(--quiet);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  label:has(:checked) {
+    color: var(--ink);
+  }
+
+  /* The ring goes round the word, not the taller area that takes the click. */
+  input:focus-visible + span {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  .panel {
+    display: none;
+  }
+</style>

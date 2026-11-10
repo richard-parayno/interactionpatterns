@@ -20,6 +20,7 @@ export interface CodeFile {
   name: string;
   lang: Lang;
   code: string;
+  framework?: string;
 }
 
 export interface Pattern {
@@ -54,14 +55,14 @@ export async function getPatterns(): Promise<Pattern[]> {
         throw new Error(`Pattern "${entry.id}" needs a Demo.astro in ${folder}/`);
       }
 
-      const code = entry.data.code.map((name) => {
+      const code = entry.data.code.map(({ file: name, framework }) => {
         const source = sources[`${folder}/${name}`];
 
         if (source === undefined) {
           throw new Error(`Pattern "${entry.id}" lists code file "${name}", which is not in ${folder}/`);
         }
 
-        return { name, lang: langs[name.split(".").pop() ?? ""] ?? "plaintext", code: source };
+        return { name, lang: langs[name.split(".").pop() ?? ""] ?? "plaintext", code: source, framework };
       });
 
       return { entry, prompt: (entry.body ?? "").trim(), Demo, code };
