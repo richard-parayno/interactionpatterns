@@ -1,39 +1,38 @@
 ---
-// Name and summary of a pattern, set small in the rail beside the window.
-// The default slot holds the text links under them: <WindowNav> and the
-// prompt's <CopyButton>.
+// What opens a pattern inside its <Window>: the name, the screenshot, and
+// the summary under it. The prompt follows.
+import Screenshot from "./Screenshot.astro";
+
 interface Props {
   name: string;
   summary: string;
+  screenshot: ImageMetadata;
+  screenshotAlt: string;
 }
 
-const { name, summary } = Astro.props;
+const { name, summary, screenshot, screenshotAlt } = Astro.props;
 ---
 
 <div class="header">
-  <h1>{name}</h1>
+  <!-- The window's title bar is the heading; this repeats it for the eye. -->
+  <p class="name" aria-hidden="true">{name}</p>
+  <Screenshot src={screenshot} alt={screenshotAlt} />
   <p class="quiet">{summary}</p>
-  <div class="links">
-    <slot />
-  </div>
 </div>
 
 <style>
   .header {
-    max-width: 22rem;
-  }
-
-  .links {
     display: grid;
     justify-items: start;
     row-gap: var(--space-2);
-    margin-top: var(--space-3);
+    max-width: var(--measure);
+    margin-bottom: var(--space-5);
   }
 
-  @media (min-width: 50rem) {
-    .links {
-      row-gap: var(--space-3);
-      margin-top: var(--space-5);
-    }
+  .name {
+    margin-bottom: var(--space-1);
+    font-size: var(--text-large);
+    line-height: var(--leading-large);
+    letter-spacing: var(--tracking-large);
   }
 </style>

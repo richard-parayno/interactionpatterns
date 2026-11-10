@@ -25,7 +25,12 @@ const hasRail = Astro.slots.has("rail");
     --grid-columns: minmax(0, 1fr) minmax(0, 2fr);
   }
 
+  /* What is in the rail stacks, at its own width. */
   .rail {
+    display: grid;
+    align-content: start;
+    justify-items: start;
+    row-gap: var(--space-2);
     margin-bottom: var(--space-8);
   }
 
@@ -40,6 +45,7 @@ const hasRail = Astro.slots.has("rail");
 
   @media (min-width: 50rem) {
     .rail {
+      row-gap: var(--space-3);
       position: sticky;
       top: var(--page-pad);
       align-self: start;

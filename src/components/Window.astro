@@ -6,7 +6,8 @@
 //
 // The window takes the height its parent gives it and never less than its
 // minimum, and long views scroll inside it. The chrome is a picture: the
-// lights do nothing.
+// lights do nothing. The title is the page's <h1>, because it is the one
+// place the pattern's name shows in every view.
 interface Props {
   /** Shown in the title bar, in the casing given. */
   title: string;
@@ -16,9 +17,9 @@ const { title } = Astro.props;
 ---
 
 <div class="window">
-  <div class="bar" aria-hidden="true">
-    <span class="lights"><i></i><i></i><i></i></span>
-    <span class="title">{title}</span>
+  <div class="bar">
+    <span class="lights" aria-hidden="true"><i></i><i></i><i></i></span>
+    <h1 class="title">{title}</h1>
   </div>
   <div class="views">
     <slot />

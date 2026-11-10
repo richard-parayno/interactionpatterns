@@ -1,6 +1,6 @@
 ---
-// The agent prompt, shown verbatim in the large size: the biggest text on a
-// pattern page. Pair it with <CopyButton target={id} />.
+// The agent prompt, shown verbatim as reading text: a size up from the site's
+// own text, in one column. Pair it with <CopyButton target={id} />.
 interface Props {
   /** Element id the copy button targets. Not "prompt": that is the view's. */
   id?: string;
@@ -15,11 +15,10 @@ const { id = "prompt-text", text } = Astro.props;
 
 <style>
   pre {
-    max-width: 34em;
+    max-width: var(--measure);
     font-family: var(--font-sans);
-    font-size: var(--text-large);
-    line-height: var(--leading-large);
-    letter-spacing: var(--tracking-large);
+    font-size: var(--text-medium);
+    line-height: var(--leading-medium);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
   }

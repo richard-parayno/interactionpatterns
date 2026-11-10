@@ -4,7 +4,6 @@ import CopyButton from "../../components/CopyButton.astro";
 import PageGrid from "../../components/PageGrid.astro";
 import PatternHeader from "../../components/PatternHeader.astro";
 import Prompt from "../../components/Prompt.astro";
-import Screenshot from "../../components/Screenshot.astro";
 import Stage from "../../components/Stage.astro";
 import Window from "../../components/Window.astro";
 import WindowNav from "../../components/WindowNav.astro";
@@ -33,26 +32,23 @@ const { name, summary, screenshot, screenshotAlt } = entry.data;
 const views = [
   { id: "prompt", label: "Prompt" },
   { id: "demo", label: "Live demo" },
-  { id: "screenshot", label: "Screenshot" },
   { id: "code", label: "Code" },
 ];
 ---
 
 <BaseLayout fit title={name} description={summary}>
   <PageGrid>
-    <PatternHeader slot="rail" name={name} summary={summary}>
+    <Fragment slot="rail">
       <WindowNav {views} />
       <CopyButton target="prompt-text" />
-    </PatternHeader>
+    </Fragment>
     <Window title={name}>
       <WindowView id="prompt" label="Prompt" initial>
+        <PatternHeader {name} {summary} {screenshot} {screenshotAlt} />
         <Prompt text={prompt} />
       </WindowView>
       <WindowView id="demo" label="Live demo" flush>
         <Stage><Demo /></Stage>
-      </WindowView>
-      <WindowView id="screenshot" label="Screenshot">
-        <Screenshot src={screenshot} alt={screenshotAlt} />
       </WindowView>
       <WindowView id="code" label="Code">
         {code.map((file) => <Code {...file} />)}

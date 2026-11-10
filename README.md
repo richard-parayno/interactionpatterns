@@ -5,7 +5,7 @@ has a name, a screenshot, a live demo, sample code, and a copy-pastable prompt
 for AI coding agents. Built as a static site with [Astro](https://astro.build/)
 and deployed to Cloudflare Workers.
 
-![A pattern page: the name, view links, and a copy-prompt link in the left rail, the agent prompt inside a macOS-style window beside it](docs/screenshot.png)
+![A pattern page: view links and a copy-prompt link in the left rail; beside them a macOS-style window opening with the pattern name, its screenshot, the summary, and the agent prompt](docs/screenshot.png)
 
 ## Stack
 
@@ -31,9 +31,9 @@ and deployed to Cloudflare Workers.
 │   │   ├── PageGrid.astro        # Rail and main column
 │   │   ├── PatternList.astro     # Index wheel picker; the centred pattern's screenshot and summary
 │   │   ├── SoundToggle.astro     # Turns the wheel's tick sound on or off
-│   │   ├── PatternHeader.astro   # Pattern name, summary, and links in the rail
+│   │   ├── PatternHeader.astro   # Name, screenshot, and summary atop the prompt view
 │   │   ├── Window.astro          # macOS-style window holding a pattern's views
-│   │   ├── WindowView.astro      # One view (prompt, demo, screenshot, code), shown via #id
+│   │   ├── WindowView.astro      # One view (prompt, demo, code), shown via #id
 │   │   ├── WindowNav.astro       # Text links that switch views
 │   │   ├── Prompt.astro          # The agent prompt, shown verbatim
 │   │   ├── CopyButton.astro      # Copies an element's text to the clipboard

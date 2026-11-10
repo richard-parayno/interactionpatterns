@@ -1,5 +1,5 @@
 /*
- * The whole visual system: a grey ground and black text, in two type sizes
+ * The whole visual system: a grey ground and black text, in three type sizes
  * and one weight. Hierarchy comes from space and position, and surfaces are
  * told apart by tone. The only lines and the only colour are on the macOS
  * window that holds a pattern (Window.astro).
@@ -17,10 +17,12 @@
   /* Type */
   --font-sans: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-mono: "Ioskeley Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --text-small: 0.875rem;
+  --text-small: 0.875rem; /* site text */
+  --text-medium: 1rem; /* reading text: the prompt */
   --text-large: clamp(1.375rem, 1rem + 1.25vw, 1.875rem);
   --text-code: 0.8125rem;
   --leading-small: 1.4;
+  --leading-medium: 1.5;
   --leading-large: 1.22;
   --tracking-large: -0.012em;
 
@@ -39,6 +41,7 @@
 
   --page-pad: clamp(1rem, 0.5rem + 2vw, 2rem);
   --gutter: var(--space-3);
+  --measure: 40rem; /* widest a column of reading text gets */
   --section-gap: var(--space-8);
 }
 

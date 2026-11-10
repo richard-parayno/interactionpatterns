@@ -1,5 +1,6 @@
 ---
-// A pattern's screenshot at the full width of the main column, unframed.
+// A pattern's screenshot, unframed: as wide as its column, but never so tall
+// that it pushes everything after it out of the window.
 import { Image } from "astro:assets";
 
 interface Props {
@@ -11,8 +12,17 @@ const { src, alt } = Astro.props;
 ---
 
 <Image
+  class="shot"
   {src}
   {alt}
-  widths={[640, 960, 1280, 1920]}
-  sizes="(min-width: 50rem) 66vw, 100vw"
+  widths={[640, 960, 1280]}
+  sizes="(min-width: 50rem) min(40rem, 60vw), 90vw"
+  loading="eager"
 />
+
+<style>
+  .shot {
+    width: auto;
+    max-height: 22rem;
+  }
+</style>
